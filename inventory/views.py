@@ -6,6 +6,7 @@ from django.db.models import Count, F, ProtectedError
 
 from .models import Category, Supplier, Product
 from .forms import CategoryForm, SupplierForm, ProductForm
+from .permissions import can_delete_inventory_required
 
 
 # ─────────────────────────────────────────────
@@ -14,8 +15,13 @@ from .forms import CategoryForm, SupplierForm, ProductForm
 
 @login_required
 def category_list(request):
+    q = request.GET.get("q", "").strip()
     categories = Category.objects.annotate(product_count=Count("products")).order_by("name")
-    return render(request, "inventory/category_list.html", {"categories": categories})
+    if q:
+        categories = categories.filter(name__icontains=q)
+    paginator = Paginator(categories, 10)
+    page_obj = paginator.get_page(request.GET.get("page"))
+    return render(request, "inventory/category_list.html", {"categories": page_obj, "page_obj": page_obj, "q": q})
 
 
 @login_required
@@ -40,6 +46,7 @@ def category_edit(request, pk):
 
 
 @login_required
+@can_delete_inventory_required
 def category_delete(request, pk):
     category = get_object_or_404(Category, pk=pk)
     if request.method == "POST":
@@ -63,10 +70,12 @@ def category_delete(request, pk):
 @login_required
 def supplier_list(request):
     q = request.GET.get("q", "").strip()
-    suppliers = Supplier.objects.all()
+    suppliers = Supplier.objects.all().order_by("name")
     if q:
         suppliers = suppliers.filter(name__icontains=q)
-    return render(request, "inventory/supplier_list.html", {"suppliers": suppliers, "q": q})
+    paginator = Paginator(suppliers, 10)
+    page_obj = paginator.get_page(request.GET.get("page"))
+    return render(request, "inventory/supplier_list.html", {"suppliers": page_obj, "page_obj": page_obj, "q": q})
 
 
 @login_required
@@ -91,6 +100,7 @@ def supplier_edit(request, pk):
 
 
 @login_required
+@can_delete_inventory_required
 def supplier_delete(request, pk):
     supplier = get_object_or_404(Supplier, pk=pk)
     if request.method == "POST":
@@ -151,6 +161,7 @@ def product_edit(request, pk):
 
 
 @login_required
+@can_delete_inventory_required
 def product_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == "POST":

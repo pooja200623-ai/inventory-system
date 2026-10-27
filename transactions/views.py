@@ -69,7 +69,7 @@ def _parse_items(post_data):
 
 @login_required
 def purchase_list(request):
-    qs = Purchase.objects.select_related("supplier", "created_by").all()
+    qs = Purchase.objects.select_related("supplier", "created_by").all().order_by("-purchase_date", "-created_at")
 
     date_from = request.GET.get("date_from", "").strip()
     date_to = request.GET.get("date_to", "").strip()
@@ -78,8 +78,12 @@ def purchase_list(request):
     if date_to:
         qs = qs.filter(purchase_date__lte=date_to)
 
+    paginator = Paginator(qs, 10)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
     return render(request, "transactions/purchase_list.html", {
-        "purchases": qs,
+        "purchases": page_obj,
+        "page_obj": page_obj,
         "date_from": date_from,
         "date_to": date_to,
     })
@@ -176,7 +180,7 @@ def purchase_create(request):
 
 @login_required
 def sale_list(request):
-    qs = Sale.objects.select_related("created_by").all()
+    qs = Sale.objects.select_related("created_by").all().order_by("-sale_date", "-created_at")
 
     q = request.GET.get("q", "").strip()
     date_from = request.GET.get("date_from", "").strip()
@@ -189,8 +193,12 @@ def sale_list(request):
     if date_to:
         qs = qs.filter(sale_date__lte=date_to)
 
+    paginator = Paginator(qs, 10)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
     return render(request, "transactions/sale_list.html", {
-        "sales": qs,
+        "sales": page_obj,
+        "page_obj": page_obj,
         "q": q,
         "date_from": date_from,
         "date_to": date_to,
