@@ -4,12 +4,13 @@ from decimal import Decimal, InvalidOperation
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q
 
 from inventory.models import Product
 from .models import Purchase, PurchaseItem, Sale, SaleItem, StockMovement
-from .forms import PurchaseForm, SaleForm
+from .forms import PurchaseForm, SaleForm, StockAdjustmentForm
 
 
 # ═════════════════════════════════════════════
@@ -320,10 +321,100 @@ def sale_create(request):
 
 
 # ═════════════════════════════════════════════
-#  STOCK HISTORY
+#  STOCK HISTORY & ADJUSTMENTS
 # ═════════════════════════════════════════════
 
 @login_required
 def stock_history(request):
-    movements = StockMovement.objects.select_related("product", "created_by").all()[:200]
-    return render(request, "transactions/stock_history.html", {"movements": movements})
+    movements_qs = StockMovement.objects.select_related("product", "created_by").order_by("-created_at")
+
+    product_id = request.GET.get("product", "").strip()
+    movement_type = request.GET.get("movement_type", "").strip()
+    date_from = request.GET.get("date_from", "").strip()
+    date_to = request.GET.get("date_to", "").strip()
+
+    if product_id:
+        movements_qs = movements_qs.filter(product_id=product_id)
+    if movement_type:
+        movements_qs = movements_qs.filter(movement_type=movement_type)
+    if date_from:
+        movements_qs = movements_qs.filter(created_at__date__gte=date_from)
+    if date_to:
+        movements_qs = movements_qs.filter(created_at__date__lte=date_to)
+
+    paginator = Paginator(movements_qs, 20)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    products = Product.objects.all().order_by("name")
+    selected_product = None
+    if product_id:
+        try:
+            selected_product = Product.objects.get(pk=product_id)
+        except Product.DoesNotExist:
+            selected_product = None
+
+    return render(request, "transactions/stock_history.html", {
+        "page_obj": page_obj,
+        "products": products,
+        "product_id": product_id,
+        "selected_product": selected_product,
+        "movement_type": movement_type,
+        "date_from": date_from,
+        "date_to": date_to,
+    })
+
+
+@login_required
+def stock_adjustment(request):
+    initial_data = {}
+    product_id = request.GET.get("product")
+    if product_id:
+        initial_data["product"] = product_id
+
+    form = StockAdjustmentForm(request.POST or None, initial=initial_data)
+
+    if request.method == "POST" and form.is_valid():
+        product_obj = form.cleaned_data["product"]
+        qty = form.cleaned_data["quantity"]
+        reason = form.cleaned_data["reason"].strip()
+
+        try:
+            with transaction.atomic():
+                product = Product.objects.select_for_update().get(pk=product_obj.pk)
+                new_balance = product.quantity + qty
+
+                if new_balance < 0:
+                    raise ValueError(
+                        f'Cannot reduce {abs(qty)} unit{"s" if abs(qty) != 1 else ""}. '
+                        f'Current stock for "{product.name}" is only {product.quantity}.'
+                    )
+
+                product.quantity = new_balance
+                product.save()
+
+                StockMovement.objects.create(
+                    product=product,
+                    movement_type="ADJUSTMENT",
+                    quantity=qty,
+                    balance_after=new_balance,
+                    reference=f"Adjustment: {reason}",
+                    created_by=request.user,
+                )
+
+            messages.success(
+                request,
+                f'Stock for "{product.name}" adjusted successfully ({"+" if qty > 0 else ""}{qty}). '
+                f'New balance: {product.quantity}.'
+            )
+            return redirect(f"/transactions/stock-history/?product={product.pk}")
+
+        except ValueError as exc:
+            messages.error(request, str(exc))
+        except Product.DoesNotExist:
+            messages.error(request, "Selected product could not be found.")
+
+    return render(request, "transactions/adjustment_form.html", {
+        "form": form,
+    })
+

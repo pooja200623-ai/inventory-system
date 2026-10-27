@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Manual Stock Adjustment{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'stock_history' %}" class="text-decoration-none text-muted small">
+        <i class="bi bi-arrow-left me-1"></i> Back to Stock History
+    </a>
+    <h4 class="mt-1 fw-bold"><i class="bi bi-sliders me-2 text-warning"></i>Manual Stock Adjustment</h4>
+    <p class="text-muted small mb-0">Record physical count corrections, damaged stock write-offs, or inventory reconciliation.</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <!-- Product -->
+                    <div class="mb-3">
+                        <label for="{{ form.product.id_for_label }}" class="form-label fw-semibold">
+                            Product <span class="text-danger">*</span>
+                        </label>
+                        {{ form.product }}
+                        {% for error in form.product.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                        <div class="form-text">Select the product whose quantity needs adjustment.</div>
+                    </div>
+
+                    <!-- Quantity Change -->
+                    <div class="mb-3">
+                        <label for="{{ form.quantity.id_for_label }}" class="form-label fw-semibold">
+                            Adjustment Quantity <span class="text-danger">*</span>
+                        </label>
+                        {{ form.quantity }}
+                        {% for error in form.quantity.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                        <div class="form-text">
+                            Use a <strong>positive number</strong> (e.g. <code>+10</code>) to increase stock, or a <strong>negative number</strong> (e.g. <code>-5</code>) to decrease stock.
+                        </div>
+                    </div>
+
+                    <!-- Reason -->
+                    <div class="mb-3">
+                        <label for="{{ form.reason.id_for_label }}" class="form-label fw-semibold">
+                            Reason for Adjustment <span class="text-danger">*</span>
+                        </label>
+                        {{ form.reason }}
+                        {% for error in form.reason.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                        <div class="form-text">Mandatory note (e.g., "Annual inventory count discrepancy", "Expired/Damaged goods").</div>
+                    </div>
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="alert alert-info py-2 small mt-4">
+                        <i class="bi bi-info-circle-fill me-1"></i>
+                        Adjustments will be saved inside a database transaction, verifying that stock cannot fall below zero, and an <strong>ADJUSTMENT</strong> record will be added to the audit trail.
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-warning text-dark fw-semibold">
+                            <i class="bi bi-check-lg me-1"></i> Apply Adjustment
+                        </button>
+                        <a href="{% url 'stock_history' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

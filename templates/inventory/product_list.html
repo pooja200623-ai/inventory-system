@@ -82,6 +82,9 @@
                             {% endif %}
                         </td>
                         <td class="text-end">
+                            <a href="{% url 'stock_history' %}?product={{ product.pk }}" class="btn btn-sm btn-outline-info me-1" title="Stock History">
+                                <i class="bi bi-clock-history"></i>
+                            </a>
                             <a href="{% url 'product_edit' product.pk %}" class="btn btn-sm btn-outline-secondary me-1" title="Edit">
                                 <i class="bi bi-pencil"></i>
                             </a>

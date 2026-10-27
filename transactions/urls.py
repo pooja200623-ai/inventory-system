@@ -13,6 +13,7 @@ urlpatterns = [
     path("sales/<int:pk>/", views.sale_detail, name="sale_detail"),
     path("sales/<int:pk>/invoice/", views.sale_invoice, name="sale_invoice"),
 
-    # Stock history
+    # Stock history & adjustment
     path("stock-history/", views.stock_history, name="stock_history"),
+    path("stock-adjustment/", views.stock_adjustment, name="stock_adjustment"),
 ]
