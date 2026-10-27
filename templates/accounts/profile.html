@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile & Settings{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h3 fw-bold mb-1">Profile &amp; Settings</h2>
+        <p class="text-muted mb-0">Manage your account information and security.</p>
+    </div>
+    <!-- POST-based logout button -->
+    <form method="post" action="{% url 'logout' %}" class="d-inline">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-danger">
+            <i class="bi bi-box-arrow-right me-1"></i>Logout
+        </button>
+    </form>
+</div>
+
+<div class="row g-4">
+
+    <!-- ─── Left column: avatar + account summary ─────────────────────── -->
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center py-4">
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary text-white"
+                         style="width: 80px; height: 80px; font-size: 2rem; font-weight: 700;">
+                        {{ profile_user.first_name|first|upper|default:profile_user.username|first|upper }}
+                    </div>
+                </div>
+                <h5 class="fw-bold mb-0">
+                    {{ profile_user.get_full_name|default:profile_user.username }}
+                </h5>
+                <p class="text-muted small mb-3">@{{ profile_user.username }}</p>
+
+                <ul class="list-unstyled text-start small px-2">
+                    <li class="d-flex align-items-center mb-2">
+                        <i class="bi bi-envelope text-primary me-2 fs-6"></i>
+                        <span class="text-break">{{ profile_user.email|default:"—" }}</span>
+                    </li>
+                    <li class="d-flex align-items-center mb-2">
+                        <i class="bi bi-calendar3 text-primary me-2 fs-6"></i>
+                        <span>Joined {{ profile_user.date_joined|date:"M d, Y" }}</span>
+                    </li>
+                    <li class="d-flex align-items-center">
+                        <i class="bi bi-clock-history text-primary me-2 fs-6"></i>
+                        <span>Last login {{ profile_user.last_login|date:"M d, Y H:i"|default:"—" }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Right column: forms ───────────────────────────────────────── -->
+    <div class="col-12 col-lg-8">
+
+        <!-- ── Update Profile Info ───────────────────────────────────── -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="card-title mb-0 fw-semibold">
+                    <i class="bi bi-person-fill me-2 text-primary"></i>Personal Information
+                </h5>
+            </div>
+            <div class="card-body py-4">
+                <form method="post" action="{% url 'profile' %}" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_profile">
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="id_full_name" class="form-label fw-semibold small">Full Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-person text-muted"></i>
+                                </span>
+                                <input
+                                    type="text"
+                                    id="id_full_name"
+                                    name="full_name"
+                                    class="form-control border-start-0 ps-0"
+                                    value="{{ profile_user.get_full_name }}"
+                                    placeholder="Your full name"
+                                    required
+                                >
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label for="id_email" class="form-label fw-semibold small">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-envelope text-muted"></i>
+                                </span>
+                                <input
+                                    type="email"
+                                    id="id_email"
+                                    name="email"
+                                    class="form-control border-start-0 ps-0"
+                                    value="{{ profile_user.email }}"
+                                    placeholder="your@email.com"
+                                    required
+                                >
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-auto">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check2 me-1"></i>Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ── Change Password ────────────────────────────────────────── -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="card-title mb-0 fw-semibold">
+                    <i class="bi bi-shield-lock-fill me-2 text-warning"></i>Change Password
+                </h5>
+            </div>
+            <div class="card-body py-4">
+                <form method="post" action="{% url 'profile' %}" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="change_password">
+
+                    <div class="row g-3">
+
+                        <!-- Current password -->
+                        <div class="col-12">
+                            <label for="id_current_password" class="form-label fw-semibold small">Current Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-lock text-muted"></i>
+                                </span>
+                                <input
+                                    type="password"
+                                    id="id_current_password"
+                                    name="current_password"
+                                    class="form-control border-start-0 border-end-0 ps-0"
+                                    placeholder="Enter current password"
+                                    autocomplete="current-password"
+                                    required
+                                >
+                                <span class="input-group-text bg-light border-start-0"
+                                      style="cursor:pointer;"
+                                      onclick="togglePwd('id_current_password', this)">
+                                    <i class="bi bi-eye text-muted"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- New password -->
+                        <div class="col-12 col-sm-6">
+                            <label for="id_new_password" class="form-label fw-semibold small">New Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-lock-fill text-muted"></i>
+                                </span>
+                                <input
+                                    type="password"
+                                    id="id_new_password"
+                                    name="new_password"
+                                    class="form-control border-start-0 border-end-0 ps-0"
+                                    placeholder="Min. 8 characters"
+                                    autocomplete="new-password"
+                                    required
+                                >
+                                <span class="input-group-text bg-light border-start-0"
+                                      style="cursor:pointer;"
+                                      onclick="togglePwd('id_new_password', this)">
+                                    <i class="bi bi-eye text-muted"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Confirm new password -->
+                        <div class="col-12 col-sm-6">
+                            <label for="id_confirm_password" class="form-label fw-semibold small">Confirm New Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-lock-fill text-muted"></i>
+                                </span>
+                                <input
+                                    type="password"
+                                    id="id_confirm_password"
+                                    name="confirm_password"
+                                    class="form-control border-start-0 border-end-0 ps-0"
+                                    placeholder="Repeat new password"
+                                    autocomplete="new-password"
+                                    oninput="checkProfileMatch()"
+                                    required
+                                >
+                                <span class="input-group-text bg-light border-start-0"
+                                      style="cursor:pointer;"
+                                      onclick="togglePwd('id_confirm_password', this)">
+                                    <i class="bi bi-eye text-muted"></i>
+                                </span>
+                            </div>
+                            <div class="form-text" id="profileMatchLabel"></div>
+                        </div>
+
+                        <div class="col-12 col-sm-auto">
+                            <button type="submit" class="btn btn-warning px-4">
+                                <i class="bi bi-arrow-repeat me-1"></i>Update Password
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div><!-- /right col -->
+</div><!-- /row -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function togglePwd(inputId, span) {
+        const input = document.getElementById(inputId);
+        const icon  = span.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('bi-eye', 'bi-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.replace('bi-eye-slash', 'bi-eye');
+        }
+    }
+
+    function checkProfileMatch() {
+        const p1 = document.getElementById('id_new_password').value;
+        const p2 = document.getElementById('id_confirm_password').value;
+        const lbl = document.getElementById('profileMatchLabel');
+        if (p2.length === 0) { lbl.textContent = ''; return; }
+        if (p1 === p2) {
+            lbl.textContent = '✓ Passwords match';
+            lbl.style.color = '#198754';
+        } else {
+            lbl.textContent = '✗ Passwords do not match';
+            lbl.style.color = '#dc3545';
+        }
+    }
+</script>
+{% endblock %}
