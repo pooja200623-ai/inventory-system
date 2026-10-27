@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Invoice {{ sale.invoice_number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+@media print {
+    /* Hide navigation, sidebar, footer, buttons, and alert messages on print */
+    #sidebar,
+    .navbar,
+    .footer,
+    .no-print,
+    .alert {
+        display: none !important;
+    }
+    
+    body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+    
+    .app-wrapper {
+        display: block !important;
+    }
+
+    .content-wrapper {
+        margin: 0 !important;
+        padding: 0 !important;
+        background-color: #ffffff !important;
+    }
+
+    main.container-fluid {
+        padding: 0 !important;
+    }
+
+    .invoice-card {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mb-4 d-flex align-items-center justify-content-between no-print">
+    <div>
+        <a href="{% url 'sale_list' %}" class="text-decoration-none text-muted small">
+            <i class="bi bi-arrow-left me-1"></i> Back to Sales
+        </a>
+        <h4 class="mt-1 fw-bold"><i class="bi bi-receipt me-2 text-primary"></i>Invoice {{ sale.invoice_number }}</h4>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'sale_create' %}" class="btn btn-outline-primary">
+            <i class="bi bi-plus-lg me-1"></i> New Sale
+        </a>
+        <button type="button" class="btn btn-success" onclick="window.print()">
+            <i class="bi bi-printer me-1"></i> Print Invoice
+        </button>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 invoice-card">
+    <div class="card-body p-4 p-md-5">
+        <!-- Shop / Header -->
+        <div class="row align-items-center border-bottom pb-4 mb-4">
+            <div class="col-sm-6">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-boxes fs-2 text-primary me-2"></i>
+                    <h3 class="fw-bold tracking-tight mb-0">StockPulse IMS</h3>
+                </div>
+                <p class="text-muted small mb-0">Inventory Management &amp; Retail Solutions</p>
+                <p class="text-muted small mb-0">Email: support@stockpulse.local | Phone: +1 (555) 019-2834</p>
+            </div>
+            <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-6 px-3 py-2 mb-2">TAX INVOICE</span>
+                <h4 class="fw-bold text-dark mb-1">{{ sale.invoice_number }}</h4>
+                <div class="text-muted small">Date: <span class="fw-semibold text-dark">{{ sale.sale_date|date:"F d, Y" }}</span></div>
+            </div>
+        </div>
+
+        <!-- Bill To & Order Info -->
+        <div class="row mb-4">
+            <div class="col-sm-6">
+                <h6 class="text-uppercase text-secondary fw-semibold small mb-2">Billed To:</h6>
+                <h5 class="fw-bold text-dark mb-1">{{ sale.customer_name }}</h5>
+                <p class="text-muted small mb-0">Customer Walk-in / Direct Order</p>
+            </div>
+            <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
+                <h6 class="text-uppercase text-secondary fw-semibold small mb-2">Invoice Details:</h6>
+                <p class="text-muted small mb-0">Billed by: <strong class="text-dark">{{ sale.created_by.get_full_name|default:sale.created_by.username }}</strong></p>
+                <p class="text-muted small mb-0">Generated: {{ sale.created_at|date:"d M Y, H:i" }}</p>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 5%;" class="text-center">#</th>
+                        <th>Item Description</th>
+                        <th style="width: 15%;" class="text-center">Item Code</th>
+                        <th style="width: 12%;" class="text-center">Quantity</th>
+                        <th style="width: 15%;" class="text-end">Unit Price</th>
+                        <th style="width: 18%;" class="text-end">Total Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in sale.items.all %}
+                    <tr>
+                        <td class="text-center text-muted small">{{ forloop.counter }}</td>
+                        <td>
+                            <span class="fw-semibold">{{ item.product.name }}</span>
+                            <div class="small text-muted">{{ item.product.category.name }}</div>
+                        </td>
+                        <td class="text-center"><code class="small">{{ item.product.product_code }}</code></td>
+                        <td class="text-center fw-semibold">{{ item.quantity }}</td>
+                        <td class="text-end">${{ item.unit_price|floatformat:2 }}</td>
+                        <td class="text-end fw-bold">${{ item.line_total|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4" class="border-0"></td>
+                        <td class="text-end fw-bold bg-light">Grand Total:</td>
+                        <td class="text-end fw-bold fs-5 text-success bg-light">${{ sale.total_amount|floatformat:2 }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Footer / Notes -->
+        <div class="border-top pt-4 mt-4 text-center text-muted small">
+            <p class="mb-1 fw-semibold">Thank you for your business!</p>
+            <p class="mb-0">This is a computer-generated invoice. If you have any inquiries, please contact our support team.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
