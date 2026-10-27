@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}New Purchase{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'purchase_list' %}" class="text-decoration-none text-muted small">
+        <i class="bi bi-arrow-left me-1"></i> Back to Purchases
+    </a>
+    <h4 class="mt-1 fw-bold"><i class="bi bi-bag-plus me-2 text-primary"></i>New Purchase</h4>
+</div>
+
+<form method="post" id="purchaseForm" novalidate>
+    {% csrf_token %}
+
+    <!-- Header Card -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-light fw-semibold">Purchase Information</div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="{{ form.supplier.id_for_label }}" class="form-label fw-semibold">
+                        Supplier <span class="text-danger">*</span>
+                    </label>
+                    {{ form.supplier }}
+                    {% for error in form.supplier.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-md-4">
+                    <label for="{{ form.purchase_date.id_for_label }}" class="form-label fw-semibold">
+                        Purchase Date <span class="text-danger">*</span>
+                    </label>
+                    {{ form.purchase_date }}
+                    {% for error in form.purchase_date.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Items Card -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-light d-flex align-items-center justify-content-between">
+            <span class="fw-semibold">Purchase Items</span>
+            <button type="button" class="btn btn-sm btn-success" id="addRowBtn">
+                <i class="bi bi-plus-lg me-1"></i> Add Row
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0" id="itemsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:5%;">#</th>
+                            <th style="width:35%;">Product <span class="text-danger">*</span></th>
+                            <th style="width:15%;">Quantity <span class="text-danger">*</span></th>
+                            <th style="width:20%;">Unit Price ($) <span class="text-danger">*</span></th>
+                            <th style="width:15%;" class="text-end">Row Total</th>
+                            <th style="width:10%;" class="text-center">Remove</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemRows">
+                        <!-- JS adds rows here -->
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="4" class="text-end fw-bold fs-6">Grand Total:</td>
+                            <td class="text-end fw-bold fs-5 text-success" id="grandTotal">$0.00</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary btn-lg">
+            <i class="bi bi-check-lg me-1"></i> Save Purchase
+        </button>
+        <a href="{% url 'purchase_list' %}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+    </div>
+</form>
+
+<!-- Product data for JavaScript -->
+<script>
+const PRODUCTS = [
+    {% for p in products %}
+    { id: {{ p.pk }}, name: "{{ p.name|escapejs }}", code: "{{ p.product_code|escapejs }}", price: "{{ p.purchase_price }}" },
+    {% endfor %}
+];
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const tbody = document.getElementById("itemRows");
+    const addBtn = document.getElementById("addRowBtn");
+    const grandTotalEl = document.getElementById("grandTotal");
+    let rowIndex = 0;
+
+    function buildProductOptions() {
+        let opts = '<option value="">-- Select product --</option>';
+        PRODUCTS.forEach(p => {
+            opts += `<option value="${p.id}" data-price="${p.price}">${p.name} (${p.code})</option>`;
+        });
+        return opts;
+    }
+
+    function recalcGrandTotal() {
+        let total = 0;
+        tbody.querySelectorAll("tr").forEach(row => {
+            const qty = parseFloat(row.querySelector(".item-qty")?.value) || 0;
+            const price = parseFloat(row.querySelector(".item-price")?.value) || 0;
+            const rowTotal = qty * price;
+            const rtEl = row.querySelector(".row-total");
+            if (rtEl) rtEl.textContent = "$" + rowTotal.toFixed(2);
+            total += rowTotal;
+        });
+        grandTotalEl.textContent = "$" + total.toFixed(2);
+    }
+
+    function renumberRows() {
+        tbody.querySelectorAll("tr").forEach((row, i) => {
+            row.querySelector(".row-num").textContent = i + 1;
+        });
+    }
+
+    function addRow() {
+        rowIndex++;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td class="row-num">${rowIndex}</td>
+            <td>
+                <select name="item_product[]" class="form-select form-select-sm item-product" required>
+                    ${buildProductOptions()}
+                </select>
+            </td>
+            <td>
+                <input type="number" name="item_quantity[]" class="form-control form-control-sm item-qty" min="1" value="1" required>
+            </td>
+            <td>
+                <input type="number" name="item_unit_price[]" class="form-control form-control-sm item-price" step="0.01" min="0.01" value="" placeholder="0.00" required>
+            </td>
+            <td class="text-end fw-semibold row-total">$0.00</td>
+            <td class="text-center">
+                <button type="button" class="btn btn-sm btn-outline-danger remove-row-btn" title="Remove row">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+
+        // Auto-fill unit price when product is selected
+        tr.querySelector(".item-product").addEventListener("change", function () {
+            const opt = this.options[this.selectedIndex];
+            const price = opt.getAttribute("data-price");
+            if (price) tr.querySelector(".item-price").value = price;
+            recalcGrandTotal();
+        });
+
+        tr.querySelector(".item-qty").addEventListener("input", recalcGrandTotal);
+        tr.querySelector(".item-price").addEventListener("input", recalcGrandTotal);
+
+        tr.querySelector(".remove-row-btn").addEventListener("click", function () {
+            tr.remove();
+            renumberRows();
+            recalcGrandTotal();
+        });
+    }
+
+    addBtn.addEventListener("click", addRow);
+
+    // Start with one row
+    addRow();
+})();
+</script>
+{% endblock %}

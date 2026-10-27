@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Stock History{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2 text-primary"></i>Stock History</h4>
+        <small class="text-muted">Recent stock movements across all products</small>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Product</th>
+                        <th>Type</th>
+                        <th class="text-center">Qty Change</th>
+                        <th class="text-center">Balance After</th>
+                        <th>Reference</th>
+                        <th>By</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in movements %}
+                    <tr>
+                        <td class="text-muted small">{{ forloop.counter }}</td>
+                        <td class="fw-semibold">{{ m.product.name }}</td>
+                        <td>
+                            {% if m.movement_type == "PURCHASE" %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">Purchase</span>
+                            {% elif m.movement_type == "SALE" %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Sale</span>
+                            {% else %}
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Adjustment</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center fw-semibold {% if m.quantity > 0 %}text-success{% else %}text-danger{% endif %}">
+                            {% if m.quantity > 0 %}+{% endif %}{{ m.quantity }}
+                        </td>
+                        <td class="text-center">{{ m.balance_after }}</td>
+                        <td class="small text-muted">{{ m.reference|default:"--" }}</td>
+                        <td class="small text-muted">{{ m.created_by.username }}</td>
+                        <td class="small text-muted">{{ m.created_at|date:"d M Y H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-5">
+                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                            No stock movements recorded yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
