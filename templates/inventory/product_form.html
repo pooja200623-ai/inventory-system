@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Product{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'product_list' %}" class="text-decoration-none text-muted small">
+        <i class="bi bi-arrow-left me-1"></i> Back to Products
+    </a>
+    <h4 class="mt-1 fw-bold"><i class="bi bi-box-seam me-2 text-primary"></i>{{ action }} Product</h4>
+</div>
+
+<div class="row">
+    <div class="col-lg-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <div class="row g-3">
+                        <!-- Name -->
+                        <div class="col-12">
+                            <label for="{{ form.name.id_for_label }}" class="form-label fw-semibold">
+                                Product Name <span class="text-danger">*</span>
+                            </label>
+                            {{ form.name }}
+                            {% for error in form.name.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+
+                        <!-- Product Code -->
+                        <div class="col-sm-6">
+                            <label for="{{ form.product_code.id_for_label }}" class="form-label fw-semibold">
+                                Product Code <span class="text-danger">*</span>
+                            </label>
+                            {{ form.product_code }}
+                            {% for error in form.product_code.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                            <div class="form-text">Must be unique (e.g. SKU-001)</div>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="col-sm-6">
+                            <label for="{{ form.category.id_for_label }}" class="form-label fw-semibold">
+                                Category <span class="text-danger">*</span>
+                            </label>
+                            {{ form.category }}
+                            {% for error in form.category.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+
+                        <!-- Purchase Price -->
+                        <div class="col-sm-6">
+                            <label for="{{ form.purchase_price.id_for_label }}" class="form-label fw-semibold">
+                                Purchase Price ($) <span class="text-danger">*</span>
+                            </label>
+                            {{ form.purchase_price }}
+                            {% for error in form.purchase_price.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+
+                        <!-- Selling Price -->
+                        <div class="col-sm-6">
+                            <label for="{{ form.selling_price.id_for_label }}" class="form-label fw-semibold">
+                                Selling Price ($) <span class="text-danger">*</span>
+                            </label>
+                            {{ form.selling_price }}
+                            {% for error in form.selling_price.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+
+                        <!-- Quantity -->
+                        <div class="col-sm-6">
+                            <label for="{{ form.quantity.id_for_label }}" class="form-label fw-semibold">Quantity in Stock</label>
+                            {{ form.quantity }}
+                            {% for error in form.quantity.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+
+                        <!-- Reorder Level -->
+                        <div class="col-sm-6">
+                            <label for="{{ form.reorder_level.id_for_label }}" class="form-label fw-semibold">Reorder Level</label>
+                            {{ form.reorder_level }}
+                            {% for error in form.reorder_level.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                            <div class="form-text">A "Low Stock" alert shows when quantity ≤ this value.</div>
+                        </div>
+                    </div>
+
+                    <!-- Non-field errors -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger mt-3">
+                            {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i> Save Product
+                        </button>
+                        <a href="{% url 'product_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

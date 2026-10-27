@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Product{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'product_list' %}" class="text-decoration-none text-muted small">
+        <i class="bi bi-arrow-left me-1"></i> Back to Products
+    </a>
+    <h4 class="mt-1 fw-bold text-danger"><i class="bi bi-trash me-2"></i>Delete Product</h4>
+</div>
+
+<div class="row">
+    <div class="col-lg-5">
+        <div class="card border-danger shadow-sm">
+            <div class="card-body p-4">
+                <p class="mb-3">Are you sure you want to delete the product:</p>
+                <p class="fs-5 fw-bold mb-1">{{ object.name }}</p>
+                <p class="text-muted small mb-3">Code: <code>{{ object.product_code }}</code> &nbsp;|&nbsp; Category: {{ object.category.name }}</p>
+                <div class="alert alert-warning py-2 small">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                    This action cannot be undone. If this product is referenced in transactions, deletion will be blocked.
+                </div>
+                <form method="post" class="d-flex gap-2 mt-3">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i> Yes, Delete
+                    </button>
+                    <a href="{% url 'product_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
