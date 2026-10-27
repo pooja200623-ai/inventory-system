@@ -1,100 +1,408 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <div>
-        <h2 class="h3 fw-bold mb-1">Dashboard</h2>
-        <p class="text-muted mb-0">Welcome to the Inventory Management &amp; Sales Analytics System.</p>
+        <h2 class="h3 fw-bold mb-1">Welcome to your Inventory Dashboard</h2>
+        <p class="text-muted mb-0">Real-time overview of products, stock levels, purchases, and sales performance.</p>
     </div>
-    <div>
-        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">
-            <i class="bi bi-circle-fill me-1 small"></i> System Active (Step 0 Initialized)
-        </span>
+    <div class="d-flex gap-2">
+        <a href="{% url 'sale_create' %}" class="btn btn-primary">
+            <i class="bi bi-cart-plus me-1"></i> New Sale
+        </a>
+        <a href="{% url 'purchase_create' %}" class="btn btn-outline-primary">
+            <i class="bi bi-bag-plus me-1"></i> New Purchase
+        </a>
     </div>
 </div>
 
+<!-- 5 Summary Cards -->
 <div class="row g-3 mb-4">
-    <div class="col-12 col-sm-6 col-xl-3">
+    <!-- Card 1: Total Products -->
+    <div class="col-12 col-sm-6 col-xl">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-muted small text-uppercase fw-semibold">Products</span>
-                        <h3 class="fw-bold my-1">--</h3>
-                        <span class="text-muted small">Catalog items</span>
+                        <span class="text-muted small text-uppercase fw-semibold">Total Products</span>
+                        <h3 class="fw-bold my-1">{{ total_products }}</h3>
+                        <a href="{% url 'product_list' %}" class="text-decoration-none small">View all products &rarr;</a>
                     </div>
                     <div class="bg-primary-subtle text-primary p-3 rounded-circle">
-                        <i class="bi bi-box-seam fs-4"></i>
+                        <i class="bi bi-boxes fs-4"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-12 col-sm-6 col-xl-3">
+
+    <!-- Card 2: Total Stock Units -->
+    <div class="col-12 col-sm-6 col-xl">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-muted small text-uppercase fw-semibold">Low Stock</span>
-                        <h3 class="fw-bold my-1 text-warning">--</h3>
-                        <span class="text-muted small">Items below threshold</span>
+                        <span class="text-muted small text-uppercase fw-semibold">Total Stock Units</span>
+                        <h3 class="fw-bold my-1">{{ total_stock_units }}</h3>
+                        <span class="text-muted small">Items in inventory</span>
                     </div>
-                    <div class="bg-warning-subtle text-warning p-3 rounded-circle">
+                    <div class="bg-info-subtle text-info p-3 rounded-circle">
+                        <i class="bi bi-layers fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: This Month's Sales Amount -->
+    <div class="col-12 col-sm-6 col-xl">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small text-uppercase fw-semibold">This Month's Sales</span>
+                        <h3 class="fw-bold my-1 text-success">${{ month_sales_amount|floatformat:2 }}</h3>
+                        <a href="{% url 'sale_list' %}" class="text-decoration-none small text-success">View sales &rarr;</a>
+                    </div>
+                    <div class="bg-success-subtle text-success p-3 rounded-circle">
+                        <i class="bi bi-currency-dollar fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: This Month's Purchase Amount -->
+    <div class="col-12 col-sm-6 col-xl">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small text-uppercase fw-semibold">This Month's Purchases</span>
+                        <h3 class="fw-bold my-1 text-primary">${{ month_purchase_amount|floatformat:2 }}</h3>
+                        <a href="{% url 'purchase_list' %}" class="text-decoration-none small text-primary">View purchases &rarr;</a>
+                    </div>
+                    <div class="bg-primary-subtle text-primary p-3 rounded-circle">
+                        <i class="bi bi-bag-check fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 5: Low-stock Count (Red if > 0) -->
+    <div class="col-12 col-sm-6 col-xl">
+        <div class="card border-0 shadow-sm h-100 {% if low_stock_count > 0 %}border-start border-danger border-4{% endif %}">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small text-uppercase fw-semibold">Low Stock Alert</span>
+                        <h3 class="fw-bold my-1 {% if low_stock_count > 0 %}text-danger{% else %}text-muted{% endif %}">
+                            {{ low_stock_count }}
+                        </h3>
+                        <a href="{% url 'low_stock' %}" class="text-decoration-none small {% if low_stock_count > 0 %}text-danger fw-semibold{% endif %}">
+                            {% if low_stock_count > 0 %}Needs attention &rarr;{% else %}All levels healthy{% endif %}
+                        </a>
+                    </div>
+                    <div class="{% if low_stock_count > 0 %}bg-danger-subtle text-danger{% else %}bg-secondary-subtle text-secondary{% endif %} p-3 rounded-circle">
                         <i class="bi bi-exclamation-triangle fs-4"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-12 col-sm-6 col-xl-3">
+</div>
+
+<!-- Charts Row 1: Sales vs Purchases & Sales by Category -->
+<div class="row g-3 mb-4">
+    <!-- Chart 1: Last 6 Months Sales vs Purchases (Bar) -->
+    <div class="col-lg-8">
         <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0 fw-semibold">
+                    <i class="bi bi-bar-chart-fill text-primary me-2"></i>Last 6 Months: Sales vs Purchases
+                </h5>
+                <span class="badge bg-light text-muted border">Monthly Trend</span>
+            </div>
             <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <span class="text-muted small text-uppercase fw-semibold">Purchases</span>
-                        <h3 class="fw-bold my-1">--</h3>
-                        <span class="text-muted small">Incoming orders</span>
-                    </div>
-                    <div class="bg-info-subtle text-info p-3 rounded-circle">
-                        <i class="bi bi-bag-plus fs-4"></i>
-                    </div>
+                <div style="position: relative; height: 300px;">
+                    <canvas id="salesPurchasesChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-12 col-sm-6 col-xl-3">
+
+    <!-- Chart 3: Sales by Category (Doughnut) -->
+    <div class="col-lg-4">
         <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <span class="text-muted small text-uppercase fw-semibold">Sales</span>
-                        <h3 class="fw-bold my-1 text-success">--</h3>
-                        <span class="text-muted small">Completed orders</span>
-                    </div>
-                    <div class="bg-success-subtle text-success p-3 rounded-circle">
-                        <i class="bi bi-cart-check fs-4"></i>
-                    </div>
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0 fw-semibold">
+                    <i class="bi bi-pie-chart-fill text-info me-2"></i>Sales by Category
+                </h5>
+                <span class="badge bg-light text-muted border">All Time</span>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-center">
+                <div style="position: relative; height: 260px;">
+                    <canvas id="categorySalesChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="card border-0 shadow-sm">
-    <div class="card-header bg-white py-3">
-        <h5 class="card-title mb-0 fw-semibold">Project Setup Complete</h5>
+<!-- Charts Row 2 & Tables: Top 5 Selling Products + Tables -->
+<div class="row g-3 mb-4">
+    <!-- Chart 2: Top 5 Selling Products (Horizontal Bar) -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0 fw-semibold">
+                    <i class="bi bi-trophy-fill text-warning me-2"></i>Top 5 Selling Products
+                </h5>
+                <span class="badge bg-light text-muted border">By Units Sold</span>
+            </div>
+            <div class="card-body">
+                <div style="position: relative; height: 260px;">
+                    <canvas id="topProductsChart"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="card-body">
-        <p class="mb-2"><strong>Step 0 Setup Status:</strong></p>
-        <ul class="list-unstyled mb-0">
-            <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i> Django project configured with <code>config/</code> package</li>
-            <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i> 4 Apps registered: <code>accounts</code>, <code>inventory</code>, <code>transactions</code>, <code>reports</code></li>
-            <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i> MySQL connection configured via <code>.env</code> using <code>python-decouple</code> and <code>mysqlclient</code></li>
-            <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i> Responsive Bootstrap 5 layout with sidebar, navbar, and Django messages framework</li>
-            <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i> Static files (CSS, JS) and template directories initialized</li>
-        </ul>
+
+    <!-- Low-Stock Mini Table -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0 fw-semibold text-danger">
+                    <i class="bi bi-exclamation-octagon-fill me-2"></i>Low-Stock Alert
+                </h5>
+                <a href="{% url 'low_stock' %}" class="btn btn-sm btn-outline-danger">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th class="text-center">Current</th>
+                                <th class="text-center">Reorder</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in low_stock_mini %}
+                            <tr class="{% if item.quantity == 0 %}table-danger{% else %}table-warning bg-opacity-25{% endif %}">
+                                <td class="fw-semibold">
+                                    {{ item.name }}
+                                    <div class="small text-muted"><code>{{ item.product_code }}</code></div>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">{{ item.category.name }}</span></td>
+                                <td class="text-center fw-bold text-danger">{{ item.quantity }}</td>
+                                <td class="text-center text-muted">{{ item.reorder_level }}</td>
+                                <td class="text-end">
+                                    <a href="{% url 'purchase_create' %}" class="btn btn-sm btn-outline-primary" title="Restock via purchase">
+                                        <i class="bi bi-bag-plus"></i> Restock
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    <i class="bi bi-check-circle text-success fs-3 d-block mb-1"></i>
+                                    All inventory items have adequate stock!
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<!-- Recent 5 Sales Table -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0 fw-semibold">
+            <i class="bi bi-clock-history text-secondary me-2"></i>Recent Sales
+        </h5>
+        <a href="{% url 'sale_list' %}" class="btn btn-sm btn-outline-primary">View All Sales</a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Invoice #</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th class="text-end">Total Amount</th>
+                        <th>Billed By</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in recent_sales %}
+                    <tr>
+                        <td class="fw-semibold text-primary">{{ sale.invoice_number }}</td>
+                        <td>{{ sale.customer_name }}</td>
+                        <td class="small">{{ sale.sale_date|date:"d M Y" }}</td>
+                        <td class="text-end fw-bold text-success">${{ sale.total_amount|floatformat:2 }}</td>
+                        <td class="small text-muted">{{ sale.created_by.username }}</td>
+                        <td class="text-end">
+                            <a href="{% url 'sale_invoice' sale.pk %}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-receipt"></i> Invoice
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-3 d-block mb-1"></i>
+                            No sales recorded yet. <a href="{% url 'sale_create' %}">Record first sale &rarr;</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Chart Data via json_script -->
+{{ chart_payload|json_script:"dashboard-chart-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const dataElement = document.getElementById("dashboard-chart-data");
+    if (!dataElement) return;
+    const chartData = JSON.parse(dataElement.textContent);
+
+    // 1. Sales vs Purchases (Bar Chart)
+    const ctxSP = document.getElementById("salesPurchasesChart");
+    if (ctxSP) {
+        new Chart(ctxSP, {
+            type: "bar",
+            data: {
+                labels: chartData.months_labels,
+                datasets: [
+                    {
+                        label: "Sales ($)",
+                        data: chartData.sales_trend,
+                        backgroundColor: "rgba(25, 135, 84, 0.75)",
+                        borderColor: "rgba(25, 135, 84, 1)",
+                        borderWidth: 1,
+                        borderRadius: 4,
+                    },
+                    {
+                        label: "Purchases ($)",
+                        data: chartData.purchases_trend,
+                        backgroundColor: "rgba(13, 110, 253, 0.75)",
+                        borderColor: "rgba(13, 110, 253, 1)",
+                        borderWidth: 1,
+                        borderRadius: 4,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) { return "$" + value; }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ": $" + Number(context.raw).toFixed(2);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Top 5 Selling Products (Horizontal Bar Chart)
+    const ctxTop = document.getElementById("topProductsChart");
+    if (ctxTop) {
+        new Chart(ctxTop, {
+            type: "bar",
+            data: {
+                labels: chartData.top_products_labels.length ? chartData.top_products_labels : ["No sales yet"],
+                datasets: [{
+                    label: "Units Sold",
+                    data: chartData.top_products_qty.length ? chartData.top_products_qty : [0],
+                    backgroundColor: "rgba(255, 193, 7, 0.8)",
+                    borderColor: "rgba(255, 193, 7, 1)",
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                indexAxis: "y",
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: { precision: 0 }
+                    }
+                }
+            }
+        });
+    }
+
+    // 3. Sales by Category (Doughnut Chart)
+    const ctxCat = document.getElementById("categorySalesChart");
+    if (ctxCat) {
+        const catLabels = chartData.cat_labels.length ? chartData.cat_labels : ["No category sales"];
+        const catData = chartData.cat_data.length ? chartData.cat_data : [1];
+        const defaultColors = [
+            "#0d6efd", "#198754", "#ffc107", "#0dcaf0", "#6f42c1", "#d63384", "#fd7e14", "#20c997"
+        ];
+
+        new Chart(ctxCat, {
+            type: "doughnut",
+            data: {
+                labels: catLabels,
+                datasets: [{
+                    data: catData,
+                    backgroundColor: chartData.cat_data.length ? defaultColors.slice(0, catLabels.length) : ["#e9ecef"],
+                    borderWidth: 1,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: "bottom",
+                        labels: { boxWidth: 12 }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                if (!chartData.cat_data.length) return "No sales";
+                                return context.label + ": $" + Number(context.raw).toFixed(2);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
 {% endblock %}
