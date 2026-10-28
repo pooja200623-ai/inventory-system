@@ -2,50 +2,55 @@
 
 {% block title %}Sale {{ sale.invoice_number }}{% endblock %}
 
+{% block breadcrumbs %}
+<li class="breadcrumb-item"><a href="{% url 'sale_list' %}">Sales</a></li>
+<li class="breadcrumb-item active" aria-current="page">{{ sale.invoice_number }}</li>
+{% endblock %}
+
 {% block content %}
-<div class="mb-4 d-flex align-items-center justify-content-between">
+<div class="mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
     <div>
-        <a href="{% url 'sale_list' %}" class="text-decoration-none text-muted small">
+        <a href="{% url 'sale_list' %}" class="text-decoration-none text-secondary small">
             <i class="bi bi-arrow-left me-1"></i> Back to Sales
         </a>
         <h4 class="mt-1 fw-bold"><i class="bi bi-cart-check me-2 text-primary"></i>Sale {{ sale.invoice_number }}</h4>
     </div>
-    <div>
+    <div class="d-flex gap-2">
         <a href="{% url 'sale_invoice' sale.pk %}" class="btn btn-outline-success">
-            <i class="bi bi-receipt me-1"></i> View Invoice
+            <i class="bi bi-receipt me-1"></i> View Tax Invoice
         </a>
     </div>
 </div>
 
 <div class="row g-4">
     <!-- Sale Info Card -->
-    <div class="col-lg-4">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-header bg-light fw-semibold">Sale Details</div>
+    <div class="col-12 col-lg-4">
+        <div class="card h-100">
+            <div class="card-header fw-semibold">Sale Information</div>
             <div class="card-body">
                 <table class="table table-borderless mb-0">
                     <tr>
-                        <th class="text-muted small ps-0" style="width:40%;">Invoice No.</th>
+                        <th class="text-secondary small ps-0" style="width:40%;">Invoice No.</th>
                         <td class="fw-semibold text-primary">{{ sale.invoice_number }}</td>
                     </tr>
                     <tr>
-                        <th class="text-muted small ps-0">Customer</th>
+                        <th class="text-secondary small ps-0">Customer</th>
                         <td class="fw-semibold">{{ sale.customer_name }}</td>
                     </tr>
                     <tr>
-                        <th class="text-muted small ps-0">Date</th>
+                        <th class="text-secondary small ps-0">Date</th>
                         <td>{{ sale.sale_date|date:"d M Y" }}</td>
                     </tr>
                     <tr>
-                        <th class="text-muted small ps-0">Total</th>
+                        <th class="text-secondary small ps-0">Total</th>
                         <td class="fw-bold text-success fs-5">${{ sale.total_amount|floatformat:2 }}</td>
                     </tr>
                     <tr>
-                        <th class="text-muted small ps-0">Billed By</th>
+                        <th class="text-secondary small ps-0">Billed By</th>
                         <td>{{ sale.created_by.username }}</td>
                     </tr>
                     <tr>
-                        <th class="text-muted small ps-0">Created At</th>
+                        <th class="text-secondary small ps-0">Logged At</th>
                         <td class="small">{{ sale.created_at|date:"d M Y H:i" }}</td>
                     </tr>
                 </table>
@@ -54,15 +59,15 @@
     </div>
 
     <!-- Items Table -->
-    <div class="col-lg-8">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-light fw-semibold">Items Sold ({{ sale.items.count }})</div>
+    <div class="col-12 col-lg-8">
+        <div class="card">
+            <div class="card-header fw-semibold">Items Sold ({{ sale.items.count }})</div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
+                        <thead>
                             <tr>
-                                <th>#</th>
+                                <th style="width:50px;">#</th>
                                 <th>Product</th>
                                 <th>Code</th>
                                 <th class="text-center">Qty</th>
@@ -73,19 +78,19 @@
                         <tbody>
                             {% for item in sale.items.all %}
                             <tr>
-                                <td class="text-muted small">{{ forloop.counter }}</td>
+                                <td class="text-secondary small">{{ forloop.counter }}</td>
                                 <td class="fw-semibold">{{ item.product.name }}</td>
                                 <td><code class="small">{{ item.product.product_code }}</code></td>
-                                <td class="text-center">{{ item.quantity }}</td>
+                                <td class="text-center fw-bold">{{ item.quantity }}</td>
                                 <td class="text-end small">${{ item.unit_price|floatformat:2 }}</td>
-                                <td class="text-end fw-semibold">${{ item.line_total|floatformat:2 }}</td>
+                                <td class="text-end fw-semibold text-success">${{ item.line_total|floatformat:2 }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
-                        <tfoot class="table-light">
-                            <tr>
-                                <td colspan="5" class="text-end fw-bold">Grand Total</td>
-                                <td class="text-end fw-bold text-success">${{ sale.total_amount|floatformat:2 }}</td>
+                        <tfoot>
+                            <tr class="fw-bold">
+                                <td colspan="5" class="text-end">Grand Total</td>
+                                <td class="text-end text-success fs-5">${{ sale.total_amount|floatformat:2 }}</td>
                             </tr>
                         </tfoot>
                     </table>

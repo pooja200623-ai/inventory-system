@@ -2,58 +2,65 @@
 
 {% block title %}Sales{% endblock %}
 
+{% block breadcrumbs %}
+<li class="breadcrumb-item active" aria-current="page">Sales</li>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
     <div>
         <h4 class="mb-0 fw-bold"><i class="bi bi-cart-check me-2 text-primary"></i>Sales</h4>
-        <small class="text-muted">View and manage sales transactions</small>
+        <small class="text-secondary">Track customer orders, generated invoices, and sales revenue</small>
     </div>
     <a href="{% url 'sale_create' %}" class="btn btn-primary">
         <i class="bi bi-plus-lg me-1"></i> New Sale
     </a>
 </div>
 
-<!-- Search & Filter -->
-<div class="card shadow-sm border-0 mb-3">
-    <div class="card-body py-2 px-3">
+<!-- Search & Filter Card -->
+<div class="card mb-3">
+    <div class="card-body py-3 px-3">
         <form method="get" class="row g-2 align-items-end">
-            <div class="col-auto">
-                <div class="input-group input-group-sm" style="min-width:260px;">
-                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" name="q" value="{{ q }}" class="form-control border-start-0 ps-0" placeholder="Invoice no. or customer...">
+            <div class="col-12 col-md-4">
+                <label class="form-label small text-secondary mb-1">Search</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Invoice # or customer…">
                 </div>
             </div>
-            <div class="col-auto">
-                <label class="form-label small text-muted mb-0">From</label>
-                <input type="date" name="date_from" value="{{ date_from }}" class="form-control form-control-sm" style="min-width:155px;">
+            <div class="col-12 col-sm-6 col-md-3">
+                <label class="form-label small text-secondary mb-1">From Date</label>
+                <input type="date" name="date_from" value="{{ date_from }}" class="form-control form-control-sm">
             </div>
-            <div class="col-auto">
-                <label class="form-label small text-muted mb-0">To</label>
-                <input type="date" name="date_to" value="{{ date_to }}" class="form-control form-control-sm" style="min-width:155px;">
+            <div class="col-12 col-sm-6 col-md-3">
+                <label class="form-label small text-secondary mb-1">To Date</label>
+                <input type="date" name="date_to" value="{{ date_to }}" class="form-control form-control-sm">
             </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-sm btn-outline-primary">Filter</button>
+            <div class="col-12 col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-primary flex-grow-1 flex-md-grow-0">
+                    <i class="bi bi-funnel me-1"></i> Filter
+                </button>
                 {% if q or date_from or date_to %}
-                    <a href="{% url 'sale_list' %}" class="btn btn-sm btn-outline-secondary ms-1">Clear</a>
+                    <a href="{% url 'sale_list' %}" class="btn btn-sm btn-outline-secondary">Clear</a>
                 {% endif %}
             </div>
         </form>
     </div>
 </div>
 
-<div class="card shadow-sm border-0">
+<div class="card">
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+                <thead>
                     <tr>
-                        <th>Invoice</th>
+                        <th>Invoice #</th>
                         <th>Customer</th>
-                        <th>Date</th>
+                        <th>Sale Date</th>
                         <th class="text-end">Total Amount</th>
                         <th>Created By</th>
-                        <th>Created At</th>
-                        <th class="text-end">Actions</th>
+                        <th>Logged On</th>
+                        <th class="text-end" style="min-width: 140px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -62,27 +69,43 @@
                         <td><span class="fw-semibold text-primary">{{ sale.invoice_number }}</span></td>
                         <td class="fw-semibold">{{ sale.customer_name }}</td>
                         <td class="small">{{ sale.sale_date|date:"d M Y" }}</td>
-                        <td class="text-end fw-semibold">${{ sale.total_amount|floatformat:2 }}</td>
-                        <td class="small text-muted">{{ sale.created_by.username }}</td>
-                        <td class="small text-muted">{{ sale.created_at|date:"d M Y H:i" }}</td>
+                        <td class="text-end fw-bold text-success">${{ sale.total_amount|floatformat:2 }}</td>
+                        <td class="small text-secondary">{{ sale.created_by.username }}</td>
+                        <td class="small text-secondary">{{ sale.created_at|date:"d M Y H:i" }}</td>
                         <td class="text-end">
-                            <a href="{% url 'sale_detail' sale.pk %}" class="btn btn-sm btn-outline-primary me-1" title="Details">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <a href="{% url 'sale_invoice' sale.pk %}" class="btn btn-sm btn-outline-success" title="Invoice">
-                                <i class="bi bi-receipt"></i>
-                            </a>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{% url 'sale_detail' sale.pk %}" class="btn btn-outline-primary" title="View Sale Items">
+                                    <i class="bi bi-eye me-1"></i> Details
+                                </a>
+                                <a href="{% url 'sale_invoice' sale.pk %}" class="btn btn-outline-secondary" title="View & Print Tax Invoice">
+                                    <i class="bi bi-receipt"></i>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-5">
-                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-                            {% if q or date_from or date_to %}
-                                No sales match your search.
-                            {% else %}
-                                No sales recorded yet. <a href="{% url 'sale_create' %}">Create one now.</a>
-                            {% endif %}
+                        <td colspan="7" class="py-4">
+                            <div class="empty-state py-3">
+                                <div class="empty-state-icon">
+                                    <i class="bi bi-cart-check"></i>
+                                </div>
+                                <div class="empty-state-title">No Sales Found</div>
+                                <p class="empty-state-description">
+                                    {% if q or date_from or date_to %}
+                                        No sales records match your specified search and date criteria.
+                                    {% else %}
+                                        No sales transactions have been recorded yet.
+                                    {% endif %}
+                                </p>
+                                {% if q or date_from or date_to %}
+                                    <a href="{% url 'sale_list' %}" class="btn btn-sm btn-outline-secondary">Reset Filters</a>
+                                {% else %}
+                                    <a href="{% url 'sale_create' %}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-plus-lg me-1"></i> Create First Sale
+                                    </a>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -91,11 +114,11 @@
         </div>
     </div>
     {% if page_obj.paginator.num_pages > 1 %}
-    <div class="card-footer bg-white border-top d-flex align-items-center justify-content-between py-2 px-3">
-        <small class="text-muted">
+    <div class="card-footer d-flex align-items-center justify-content-between flex-wrap gap-2 py-3 px-3">
+        <small class="text-secondary">
             Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} sales
         </small>
-        <nav aria-label="Sales pagination">
+        <nav aria-label="Sale pagination">
             <ul class="pagination pagination-sm mb-0">
                 {% if page_obj.has_previous %}
                     <li class="page-item">

@@ -2,32 +2,38 @@
 
 {% block title %}Delete Supplier{% endblock %}
 
+{% block breadcrumbs %}
+<li class="breadcrumb-item"><a href="{% url 'supplier_list' %}">Suppliers</a></li>
+<li class="breadcrumb-item active" aria-current="page">Delete Supplier</li>
+{% endblock %}
+
 {% block content %}
 <div class="mb-4">
-    <a href="{% url 'supplier_list' %}" class="text-decoration-none text-muted small">
+    <a href="{% url 'supplier_list' %}" class="text-decoration-none text-secondary small">
         <i class="bi bi-arrow-left me-1"></i> Back to Suppliers
     </a>
     <h4 class="mt-1 fw-bold text-danger"><i class="bi bi-trash me-2"></i>Delete Supplier</h4>
 </div>
 
 <div class="row">
-    <div class="col-lg-5">
-        <div class="card border-danger shadow-sm">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card border-danger">
             <div class="card-body p-4">
-                <p class="mb-3">Are you sure you want to delete the supplier:</p>
-                <p class="fs-5 fw-bold">{{ object.name }}</p>
-                <p class="text-muted small mb-0"><i class="bi bi-telephone me-1"></i>{{ object.phone }}</p>
-                <p class="text-muted small mb-3"><i class="bi bi-envelope me-1"></i>{{ object.email }}</p>
-                <div class="alert alert-warning py-2 small">
-                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
-                    This action cannot be undone.
+                <p class="mb-2">Are you sure you want to delete the supplier:</p>
+                <div class="p-3 bg-body-secondary rounded mb-3">
+                    <h5 class="fw-bold mb-1">{{ object.name }}</h5>
+                    <p class="text-secondary small mb-0">{{ object.email|default:"No email" }} &nbsp;|&nbsp; {{ object.phone|default:"No phone" }}</p>
                 </div>
-                <form method="post" class="d-flex gap-2 mt-3">
+                <div class="alert alert-warning py-2 small mb-3">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                    This action cannot be undone. If this supplier is linked to existing purchases, deletion will be blocked by system integrity checks.
+                </div>
+                <form method="post" class="d-flex gap-2">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">
+                    <button type="submit" class="btn btn-danger btn-lg px-4">
                         <i class="bi bi-trash me-1"></i> Yes, Delete
                     </button>
-                    <a href="{% url 'supplier_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                    <a href="{% url 'supplier_list' %}" class="btn btn-outline-secondary btn-lg">Cancel</a>
                 </form>
             </div>
         </div>

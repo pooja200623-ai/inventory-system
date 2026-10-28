@@ -2,31 +2,38 @@
 
 {% block title %}Delete Product{% endblock %}
 
+{% block breadcrumbs %}
+<li class="breadcrumb-item"><a href="{% url 'product_list' %}">Products</a></li>
+<li class="breadcrumb-item active" aria-current="page">Delete Product</li>
+{% endblock %}
+
 {% block content %}
 <div class="mb-4">
-    <a href="{% url 'product_list' %}" class="text-decoration-none text-muted small">
+    <a href="{% url 'product_list' %}" class="text-decoration-none text-secondary small">
         <i class="bi bi-arrow-left me-1"></i> Back to Products
     </a>
     <h4 class="mt-1 fw-bold text-danger"><i class="bi bi-trash me-2"></i>Delete Product</h4>
 </div>
 
 <div class="row">
-    <div class="col-lg-5">
-        <div class="card border-danger shadow-sm">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card border-danger">
             <div class="card-body p-4">
-                <p class="mb-3">Are you sure you want to delete the product:</p>
-                <p class="fs-5 fw-bold mb-1">{{ object.name }}</p>
-                <p class="text-muted small mb-3">Code: <code>{{ object.product_code }}</code> &nbsp;|&nbsp; Category: {{ object.category.name }}</p>
-                <div class="alert alert-warning py-2 small">
-                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
-                    This action cannot be undone. If this product is referenced in transactions, deletion will be blocked.
+                <p class="mb-2">Are you sure you want to delete the product:</p>
+                <div class="p-3 bg-body-secondary rounded mb-3">
+                    <h5 class="fw-bold mb-1">{{ object.name }}</h5>
+                    <p class="text-secondary small mb-0">Code: <code>{{ object.product_code }}</code> &nbsp;|&nbsp; Category: {{ object.category.name }}</p>
                 </div>
-                <form method="post" class="d-flex gap-2 mt-3">
+                <div class="alert alert-warning py-2 small mb-3">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                    This action cannot be undone. If this product is referenced in sales or purchase transactions, deletion will be blocked by system integrity constraints.
+                </div>
+                <form method="post" class="d-flex gap-2">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">
+                    <button type="submit" class="btn btn-danger btn-lg px-4">
                         <i class="bi bi-trash me-1"></i> Yes, Delete
                     </button>
-                    <a href="{% url 'product_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                    <a href="{% url 'product_list' %}" class="btn btn-outline-secondary btn-lg">Cancel</a>
                 </form>
             </div>
         </div>

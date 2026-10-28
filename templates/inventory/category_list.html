@@ -2,11 +2,15 @@
 
 {% block title %}Categories{% endblock %}
 
+{% block breadcrumbs %}
+<li class="breadcrumb-item active" aria-current="page">Categories</li>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
     <div>
         <h4 class="mb-0 fw-bold"><i class="bi bi-tags me-2 text-primary"></i>Categories</h4>
-        <small class="text-muted">Manage product categories</small>
+        <small class="text-secondary">Organize products into functional groupings</small>
     </div>
     <a href="{% url 'category_add' %}" class="btn btn-primary">
         <i class="bi bi-plus-lg me-1"></i> Add Category
@@ -14,59 +18,89 @@
 </div>
 
 <!-- Search Bar -->
-<div class="card shadow-sm border-0 mb-3">
-    <div class="card-body py-2 px-3">
-        <form method="get" class="d-flex gap-2 align-items-center">
-            <div class="input-group input-group-sm" style="max-width: 360px;">
-                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                <input type="text" name="q" value="{{ q }}" class="form-control border-start-0 ps-0" placeholder="Search categories…">
+<div class="card mb-3">
+    <div class="card-body py-3 px-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-12 col-md-5">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search categories by name…">
+                </div>
             </div>
-            <button type="submit" class="btn btn-sm btn-outline-primary">Search</button>
-            {% if q %}
-                <a href="{% url 'category_list' %}" class="btn btn-sm btn-outline-secondary">Clear</a>
-            {% endif %}
+            <div class="col-12 col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-primary">
+                    <i class="bi bi-funnel me-1"></i> Search
+                </button>
+                {% if q %}
+                    <a href="{% url 'category_list' %}" class="btn btn-sm btn-outline-secondary">Clear</a>
+                {% endif %}
+            </div>
         </form>
     </div>
 </div>
 
-<div class="card shadow-sm border-0">
+<div class="card">
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+                <thead>
                     <tr>
-                        <th>#</th>
+                        <th style="width: 50px;">#</th>
                         <th>Name</th>
                         <th>Description</th>
                         <th class="text-center">Products</th>
                         <th>Created</th>
-                        <th class="text-end">Actions</th>
+                        <th class="text-end" style="min-width: 110px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for category in categories %}
                     <tr>
-                        <td class="text-muted small">{{ forloop.counter|add:page_obj.start_index|add:"-1" }}</td>
-                        <td class="fw-semibold">{{ category.name }}</td>
-                        <td class="text-muted small">{{ category.description|default:"—" }}</td>
+                        <td class="text-secondary small">{{ forloop.counter|add:page_obj.start_index|add:"-1" }}</td>
+                        <td class="fw-semibold text-truncate" style="max-width: 220px;">{{ category.name }}</td>
+                        <td class="text-secondary small">{{ category.description|default:"—" }}</td>
                         <td class="text-center">
-                            <span class="badge bg-primary rounded-pill">{{ category.product_count }}</span>
+                            <span class="badge badge-subtle-primary rounded-pill px-3">{{ category.product_count }}</span>
                         </td>
-                        <td class="text-muted small">{{ category.created_at|date:"d M Y" }}</td>
+                        <td class="text-secondary small">{{ category.created_at|date:"d M Y" }}</td>
                         <td class="text-end">
-                            <a href="{% url 'category_edit' category.pk %}" class="btn btn-sm btn-outline-secondary me-1" title="Edit">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <a href="{% url 'category_delete' category.pk %}" class="btn btn-sm btn-outline-danger" title="Delete">
-                                <i class="bi bi-trash"></i>
-                            </a>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{% url 'category_edit' category.pk %}" class="btn btn-outline-secondary" title="Edit Category">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger" title="Delete Category"
+                                        data-confirm-delete
+                                        data-delete-url="{% url 'category_delete' category.pk %}"
+                                        data-item-name="{{ category.name }}"
+                                        data-item-message="Are you sure you want to delete this category? Categories containing active products cannot be deleted.">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-5">
-                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-                            {% if q %}No categories match "<strong>{{ q }}</strong>".{% else %}No categories found. <a href="{% url 'category_add' %}">Add one now.</a>{% endif %}
+                        <td colspan="6" class="py-4">
+                            <div class="empty-state py-3">
+                                <div class="empty-state-icon">
+                                    <i class="bi bi-tags"></i>
+                                </div>
+                                <div class="empty-state-title">No Categories Found</div>
+                                <p class="empty-state-description">
+                                    {% if q %}
+                                        No categories match "{{ q }}".
+                                    {% else %}
+                                        No categories have been created yet.
+                                    {% endif %}
+                                </p>
+                                {% if q %}
+                                    <a href="{% url 'category_list' %}" class="btn btn-sm btn-outline-secondary">Reset Search</a>
+                                {% else %}
+                                    <a href="{% url 'category_add' %}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-plus-lg me-1"></i> Create First Category
+                                    </a>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -75,8 +109,8 @@
         </div>
     </div>
     {% if page_obj.paginator.num_pages > 1 %}
-    <div class="card-footer bg-white border-top d-flex align-items-center justify-content-between py-2 px-3">
-        <small class="text-muted">
+    <div class="card-footer d-flex align-items-center justify-content-between flex-wrap gap-2 py-3 px-3">
+        <small class="text-secondary">
             Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} categories
         </small>
         <nav aria-label="Category pagination">

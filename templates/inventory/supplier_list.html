@@ -2,11 +2,15 @@
 
 {% block title %}Suppliers{% endblock %}
 
+{% block breadcrumbs %}
+<li class="breadcrumb-item active" aria-current="page">Suppliers</li>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
     <div>
         <h4 class="mb-0 fw-bold"><i class="bi bi-truck me-2 text-primary"></i>Suppliers</h4>
-        <small class="text-muted">Manage your suppliers</small>
+        <small class="text-secondary">Manage procurement vendors and contact channels</small>
     </div>
     <a href="{% url 'supplier_add' %}" class="btn btn-primary">
         <i class="bi bi-plus-lg me-1"></i> Add Supplier
@@ -14,59 +18,89 @@
 </div>
 
 <!-- Search Bar -->
-<div class="card shadow-sm border-0 mb-3">
-    <div class="card-body py-2 px-3">
-        <form method="get" class="d-flex gap-2 align-items-center">
-            <div class="input-group input-group-sm" style="max-width: 360px;">
-                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                <input type="text" name="q" value="{{ q }}" class="form-control border-start-0 ps-0" placeholder="Search by supplier name…">
+<div class="card mb-3">
+    <div class="card-body py-3 px-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-12 col-md-5">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search by supplier name…">
+                </div>
             </div>
-            <button type="submit" class="btn btn-sm btn-outline-primary">Search</button>
-            {% if q %}
-                <a href="{% url 'supplier_list' %}" class="btn btn-sm btn-outline-secondary">Clear</a>
-            {% endif %}
+            <div class="col-12 col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-primary">
+                    <i class="bi bi-funnel me-1"></i> Search
+                </button>
+                {% if q %}
+                    <a href="{% url 'supplier_list' %}" class="btn btn-sm btn-outline-secondary">Clear</a>
+                {% endif %}
+            </div>
         </form>
     </div>
 </div>
 
-<div class="card shadow-sm border-0">
+<div class="card">
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+                <thead>
                     <tr>
-                        <th>#</th>
-                        <th>Name</th>
+                        <th style="width: 50px;">#</th>
+                        <th>Supplier</th>
                         <th>Phone</th>
                         <th>Email</th>
                         <th>Address</th>
                         <th>Added</th>
-                        <th class="text-end">Actions</th>
+                        <th class="text-end" style="min-width: 110px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for supplier in suppliers %}
                     <tr>
-                        <td class="text-muted small">{{ forloop.counter|add:page_obj.start_index|add:"-1" }}</td>
-                        <td class="fw-semibold">{{ supplier.name }}</td>
-                        <td class="small">{{ supplier.phone }}</td>
-                        <td class="small">{{ supplier.email }}</td>
-                        <td class="small text-muted" style="max-width:200px;">{{ supplier.address|truncatechars:60 }}</td>
-                        <td class="text-muted small">{{ supplier.created_at|date:"d M Y" }}</td>
+                        <td class="text-secondary small">{{ forloop.counter|add:page_obj.start_index|add:"-1" }}</td>
+                        <td class="fw-semibold text-truncate" style="max-width: 200px;">{{ supplier.name }}</td>
+                        <td class="small">{{ supplier.phone|default:"—" }}</td>
+                        <td class="small text-truncate" style="max-width: 180px;">{{ supplier.email|default:"—" }}</td>
+                        <td class="small text-secondary text-truncate" style="max-width: 220px;">{{ supplier.address|default:"—" }}</td>
+                        <td class="text-secondary small">{{ supplier.created_at|date:"d M Y" }}</td>
                         <td class="text-end">
-                            <a href="{% url 'supplier_edit' supplier.pk %}" class="btn btn-sm btn-outline-secondary me-1" title="Edit">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <a href="{% url 'supplier_delete' supplier.pk %}" class="btn btn-sm btn-outline-danger" title="Delete">
-                                <i class="bi bi-trash"></i>
-                            </a>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{% url 'supplier_edit' supplier.pk %}" class="btn btn-outline-secondary" title="Edit Supplier">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger" title="Delete Supplier"
+                                        data-confirm-delete
+                                        data-delete-url="{% url 'supplier_delete' supplier.pk %}"
+                                        data-item-name="{{ supplier.name }}"
+                                        data-item-message="Are you sure you want to delete this supplier? If purchases are attached to this supplier, deletion may be blocked.">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-5">
-                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-                            {% if q %}No suppliers match "<strong>{{ q }}</strong>".{% else %}No suppliers yet. <a href="{% url 'supplier_add' %}">Add one now.</a>{% endif %}
+                        <td colspan="7" class="py-4">
+                            <div class="empty-state py-3">
+                                <div class="empty-state-icon">
+                                    <i class="bi bi-truck"></i>
+                                </div>
+                                <div class="empty-state-title">No Suppliers Found</div>
+                                <p class="empty-state-description">
+                                    {% if q %}
+                                        No suppliers match "{{ q }}".
+                                    {% else %}
+                                        You haven't added any suppliers yet.
+                                    {% endif %}
+                                </p>
+                                {% if q %}
+                                    <a href="{% url 'supplier_list' %}" class="btn btn-sm btn-outline-secondary">Reset Search</a>
+                                {% else %}
+                                    <a href="{% url 'supplier_add' %}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-plus-lg me-1"></i> Add First Supplier
+                                    </a>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -75,8 +109,8 @@
         </div>
     </div>
     {% if page_obj.paginator.num_pages > 1 %}
-    <div class="card-footer bg-white border-top d-flex align-items-center justify-content-between py-2 px-3">
-        <small class="text-muted">
+    <div class="card-footer d-flex align-items-center justify-content-between flex-wrap gap-2 py-3 px-3">
+        <small class="text-secondary">
             Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} suppliers
         </small>
         <nav aria-label="Supplier pagination">

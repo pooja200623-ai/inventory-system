@@ -2,102 +2,136 @@
 
 {% block title %}Products{% endblock %}
 
+{% block breadcrumbs %}
+<li class="breadcrumb-item active" aria-current="page">Products</li>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
     <div>
         <h4 class="mb-0 fw-bold"><i class="bi bi-box-seam me-2 text-primary"></i>Products</h4>
-        <small class="text-muted">Manage your product inventory</small>
+        <small class="text-secondary">Manage and monitor your product catalog and inventory</small>
     </div>
     <a href="{% url 'product_add' %}" class="btn btn-primary">
         <i class="bi bi-plus-lg me-1"></i> Add Product
     </a>
 </div>
 
-<!-- Search & Filter -->
-<div class="card shadow-sm border-0 mb-3">
-    <div class="card-body py-2 px-3">
+<!-- Search & Filter Card -->
+<div class="card mb-3">
+    <div class="card-body py-3 px-3">
         <form method="get" class="row g-2 align-items-center">
-            <div class="col-auto">
-                <div class="input-group input-group-sm" style="min-width:260px;">
-                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" name="q" value="{{ q }}" class="form-control border-start-0 ps-0" placeholder="Search by name or code…">
+            <div class="col-12 col-md-5">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search by name or product code…">
                 </div>
             </div>
-            <div class="col-auto">
-                <select name="category" class="form-select form-select-sm" style="min-width:180px;">
+            <div class="col-12 col-sm-6 col-md-4">
+                <select name="category" class="form-select form-select-sm">
                     <option value="">All Categories</option>
                     {% for cat in categories %}
                         <option value="{{ cat.pk }}" {% if selected_category == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-sm btn-outline-primary">Filter</button>
+            <div class="col-12 col-sm-6 col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-primary flex-grow-1 flex-md-grow-0">
+                    <i class="bi bi-funnel me-1"></i> Filter
+                </button>
                 {% if q or selected_category %}
-                    <a href="{% url 'product_list' %}" class="btn btn-sm btn-outline-secondary ms-1">Clear</a>
+                    <a href="{% url 'product_list' %}" class="btn btn-sm btn-outline-secondary">Clear</a>
                 {% endif %}
             </div>
         </form>
     </div>
 </div>
 
-<div class="card shadow-sm border-0">
+<div class="card">
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+                <thead>
                     <tr>
-                        <th>#</th>
+                        <th style="width: 50px;">#</th>
                         <th>Name</th>
                         <th>Code</th>
                         <th>Category</th>
-                        <th class="text-end">Purchase&nbsp;Price</th>
-                        <th class="text-end">Selling&nbsp;Price</th>
-                        <th class="text-center">Qty</th>
+                        <th class="text-end">Cost Price</th>
+                        <th class="text-end">Selling Price</th>
+                        <th class="text-center">Stock</th>
                         <th class="text-center">Reorder</th>
                         <th class="text-center">Status</th>
-                        <th class="text-end">Actions</th>
+                        <th class="text-end" style="min-width: 140px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for product in page_obj %}
                     <tr>
-                        <td class="text-muted small">{{ forloop.counter|add:page_obj.start_index|add:"-1" }}</td>
-                        <td class="fw-semibold">{{ product.name }}</td>
+                        <td class="text-secondary small">{{ forloop.counter|add:page_obj.start_index|add:"-1" }}</td>
+                        <td class="fw-semibold text-truncate" style="max-width: 220px;">{{ product.name }}</td>
                         <td><code class="small">{{ product.product_code }}</code></td>
                         <td>
-                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill small fw-normal">
+                            <span class="badge badge-subtle-secondary">
                                 {{ product.category.name }}
                             </span>
                         </td>
                         <td class="text-end small">${{ product.purchase_price }}</td>
-                        <td class="text-end small">${{ product.selling_price }}</td>
-                        <td class="text-center">{{ product.quantity }}</td>
-                        <td class="text-center text-muted small">{{ product.reorder_level }}</td>
+                        <td class="text-end small fw-semibold">${{ product.selling_price }}</td>
                         <td class="text-center">
-                            {% if product.is_low_stock %}
-                                <span class="badge bg-danger">Low</span>
+                            <span class="fw-bold {% if product.is_low_stock %}text-danger{% endif %}">{{ product.quantity }}</span>
+                        </td>
+                        <td class="text-center text-secondary small">{{ product.reorder_level }}</td>
+                        <td class="text-center">
+                            {% if product.quantity == 0 %}
+                                <span class="badge badge-subtle-danger">Out of Stock</span>
+                            {% elif product.is_low_stock %}
+                                <span class="badge badge-subtle-warning">Low Stock</span>
                             {% else %}
-                                <span class="badge bg-success">OK</span>
+                                <span class="badge badge-subtle-success">Optimal</span>
                             {% endif %}
                         </td>
                         <td class="text-end">
-                            <a href="{% url 'stock_history' %}?product={{ product.pk }}" class="btn btn-sm btn-outline-info me-1" title="Stock History">
-                                <i class="bi bi-clock-history"></i>
-                            </a>
-                            <a href="{% url 'product_edit' product.pk %}" class="btn btn-sm btn-outline-secondary me-1" title="Edit">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <a href="{% url 'product_delete' product.pk %}" class="btn btn-sm btn-outline-danger" title="Delete">
-                                <i class="bi bi-trash"></i>
-                            </a>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{% url 'stock_history' %}?product={{ product.pk }}" class="btn btn-outline-secondary" title="Stock History">
+                                    <i class="bi bi-clock-history"></i>
+                                </a>
+                                <a href="{% url 'product_edit' product.pk %}" class="btn btn-outline-secondary" title="Edit Product">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger" title="Delete Product"
+                                        data-confirm-delete
+                                        data-delete-url="{% url 'product_delete' product.pk %}"
+                                        data-item-name="{{ product.name }} ({{ product.product_code }})"
+                                        data-item-message="Are you sure you want to delete this product? If it is referenced in past transactions, deletion may be prevented.">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="10" class="text-center text-muted py-5">
-                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-                            {% if q or selected_category %}No products match your filters.{% else %}No products yet. <a href="{% url 'product_add' %}">Add one now.</a>{% endif %}
+                        <td colspan="10" class="py-4">
+                            <div class="empty-state py-3">
+                                <div class="empty-state-icon">
+                                    <i class="bi bi-box-seam"></i>
+                                </div>
+                                <div class="empty-state-title">No Products Found</div>
+                                <p class="empty-state-description">
+                                    {% if q or selected_category %}
+                                        No products match your current search and category criteria.
+                                    {% else %}
+                                        Your product catalog is empty. Start adding items to begin managing inventory.
+                                    {% endif %}
+                                </p>
+                                {% if q or selected_category %}
+                                    <a href="{% url 'product_list' %}" class="btn btn-sm btn-outline-secondary">Reset Filters</a>
+                                {% else %}
+                                    <a href="{% url 'product_add' %}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-plus-lg me-1"></i> Add First Product
+                                    </a>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -106,8 +140,8 @@
         </div>
     </div>
     {% if page_obj.paginator.num_pages > 1 %}
-    <div class="card-footer bg-white border-top d-flex align-items-center justify-content-between py-2 px-3">
-        <small class="text-muted">
+    <div class="card-footer d-flex align-items-center justify-content-between flex-wrap gap-2 py-3 px-3">
+        <small class="text-secondary">
             Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} products
         </small>
         <nav aria-label="Product pagination">

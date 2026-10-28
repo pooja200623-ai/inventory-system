@@ -2,19 +2,24 @@
 
 {% block title %}Stock History{% endblock %}
 
+{% block breadcrumbs %}
+<li class="breadcrumb-item"><a href="{% url 'product_list' %}">Inventory</a></li>
+<li class="breadcrumb-item active" aria-current="page">Stock History</li>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
     <div>
-        <h4 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2 text-primary"></i>Stock History</h4>
-        <small class="text-muted">
+        <h4 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2 text-primary"></i>Stock Movement History</h4>
+        <small class="text-secondary">
             {% if selected_product %}
-                Audit trail for <strong>{{ selected_product.name }}</strong> (<code>{{ selected_product.product_code }}</code>)
+                Immutable audit trail for <strong>{{ selected_product.name }}</strong> (<code>{{ selected_product.product_code }}</code>)
             {% else %}
-                Audit trail of all inventory stock movements
+                Audit trail and ledger of all inventory stock movements
             {% endif %}
         </small>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
         {% if selected_product %}
             <a href="{% url 'stock_history' %}" class="btn btn-outline-secondary">
                 <i class="bi bi-x-circle me-1"></i> Clear Product Filter
@@ -27,12 +32,12 @@
 </div>
 
 <!-- Filters Card -->
-<div class="card shadow-sm border-0 mb-3">
+<div class="card mb-3">
     <div class="card-body py-3 px-3">
         <form method="get" class="row g-2 align-items-end">
             <!-- Product Filter -->
-            <div class="col-md-3 col-sm-6">
-                <label class="form-label small text-muted mb-1">Product</label>
+            <div class="col-12 col-sm-6 col-md-3">
+                <label class="form-label small text-secondary mb-1">Product</label>
                 <select name="product" class="form-select form-select-sm">
                     <option value="">All Products</option>
                     {% for p in products %}
@@ -44,31 +49,31 @@
             </div>
 
             <!-- Movement Type Filter -->
-            <div class="col-md-2 col-sm-6">
-                <label class="form-label small text-muted mb-1">Movement Type</label>
+            <div class="col-12 col-sm-6 col-md-2">
+                <label class="form-label small text-secondary mb-1">Movement Type</label>
                 <select name="movement_type" class="form-select form-select-sm">
                     <option value="">All Types</option>
-                    <option value="PURCHASE" {% if movement_type == 'PURCHASE' %}selected{% endif %}>Purchase</option>
-                    <option value="SALE" {% if movement_type == 'SALE' %}selected{% endif %}>Sale</option>
+                    <option value="PURCHASE" {% if movement_type == 'PURCHASE' %}selected{% endif %}>Purchase (In)</option>
+                    <option value="SALE" {% if movement_type == 'SALE' %}selected{% endif %}>Sale (Out)</option>
                     <option value="ADJUSTMENT" {% if movement_type == 'ADJUSTMENT' %}selected{% endif %}>Adjustment</option>
                 </select>
             </div>
 
             <!-- Date From -->
-            <div class="col-md-2 col-sm-6">
-                <label class="form-label small text-muted mb-1">From Date</label>
+            <div class="col-12 col-sm-6 col-md-2">
+                <label class="form-label small text-secondary mb-1">From Date</label>
                 <input type="date" name="date_from" value="{{ date_from }}" class="form-control form-control-sm">
             </div>
 
             <!-- Date To -->
-            <div class="col-md-2 col-sm-6">
-                <label class="form-label small text-muted mb-1">To Date</label>
+            <div class="col-12 col-sm-6 col-md-2">
+                <label class="form-label small text-secondary mb-1">To Date</label>
                 <input type="date" name="date_to" value="{{ date_to }}" class="form-control form-control-sm">
             </div>
 
             <!-- Action Buttons -->
-            <div class="col-md-3 col-sm-12 d-flex gap-2">
-                <button type="submit" class="btn btn-sm btn-primary">
+            <div class="col-12 col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-primary flex-grow-1 flex-md-grow-0">
                     <i class="bi bi-funnel me-1"></i> Filter
                 </button>
                 {% if product_id or movement_type or date_from or date_to %}
@@ -79,67 +84,75 @@
     </div>
 </div>
 
-<!-- Stock Movements Table -->
-<div class="card shadow-sm border-0">
+<div class="card">
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+                <thead>
                     <tr>
-                        <th style="width: 5%;">#</th>
-                        <th>Date &amp; Time</th>
+                        <th style="width: 50px;">#</th>
                         <th>Product</th>
                         <th class="text-center">Type</th>
-                        <th class="text-center">Quantity Change</th>
+                        <th class="text-center">Qty Change</th>
+                        <th class="text-center">Balance Before</th>
                         <th class="text-center">Balance After</th>
-                        <th>Reference / Reason</th>
+                        <th>Reference / Note</th>
                         <th>User</th>
+                        <th>Date &amp; Time</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for m in page_obj %}
+                    {% for h in history_list %}
                     <tr>
-                        <td class="text-muted small">{{ forloop.counter|add:page_obj.start_index|add:"-1" }}</td>
-                        <td class="small text-nowrap">
-                            <i class="bi bi-calendar3 me-1 text-muted"></i>{{ m.created_at|date:"d M Y, H:i" }}
-                        </td>
-                        <td>
-                            <a href="{% url 'stock_history' %}?product={{ m.product.pk }}" class="fw-semibold text-decoration-none text-dark" title="Filter by this product">
-                                {{ m.product.name }}
+                        <td class="text-secondary small">{{ forloop.counter|add:page_obj.start_index|add:"-1" }}</td>
+                        <td class="fw-semibold text-truncate" style="max-width: 200px;">
+                            <a href="?product={{ h.product.pk }}" class="text-decoration-none">
+                                {{ h.product.name }}
                             </a>
-                            <div><code class="small text-muted">{{ m.product.product_code }}</code></div>
+                            <div class="small text-secondary"><code>{{ h.product.product_code }}</code></div>
                         </td>
                         <td class="text-center">
-                            {% if m.movement_type == "PURCHASE" %}
-                                <span class="badge bg-success">PURCHASE</span>
-                            {% elif m.movement_type == "SALE" %}
-                                <span class="badge bg-danger">SALE</span>
-                            {% elif m.movement_type == "ADJUSTMENT" %}
-                                <span class="badge bg-warning text-dark">ADJUSTMENT</span>
+                            {% if h.movement_type == 'PURCHASE' %}
+                                <span class="badge badge-subtle-primary">PURCHASE</span>
+                            {% elif h.movement_type == 'SALE' %}
+                                <span class="badge badge-subtle-success">SALE</span>
                             {% else %}
-                                <span class="badge bg-secondary">{{ m.movement_type }}</span>
+                                <span class="badge badge-subtle-warning">ADJUSTMENT</span>
                             {% endif %}
                         </td>
-                        <td class="text-center fw-bold {% if m.quantity > 0 %}text-success{% else %}text-danger{% endif %}">
-                            {% if m.quantity > 0 %}+{% endif %}{{ m.quantity }}
+                        <td class="text-center fw-bold {% if h.quantity_change > 0 %}text-success{% else %}text-danger{% endif %}">
+                            {% if h.quantity_change > 0 %}+{{ h.quantity_change }}{% else %}{{ h.quantity_change }}{% endif %}
                         </td>
-                        <td class="text-center fw-semibold">
-                            <span class="badge bg-light text-dark border px-2 py-1 fs-6">{{ m.balance_after }}</span>
+                        <td class="text-center text-secondary small">{{ h.stock_before }}</td>
+                        <td class="text-center fw-bold">{{ h.stock_after }}</td>
+                        <td class="small text-secondary text-truncate" style="max-width: 220px;">
+                            {% if h.reference_id %}
+                                <span class="badge badge-subtle-secondary me-1">#{{ h.reference_id }}</span>
+                            {% endif %}
+                            {{ h.notes|default:"—" }}
                         </td>
-                        <td class="small">{{ m.reference|default:"—" }}</td>
-                        <td class="small text-muted">
-                            <i class="bi bi-person me-1"></i>{{ m.created_by.username }}
-                        </td>
+                        <td class="small text-secondary">{{ h.created_by.username|default:"System" }}</td>
+                        <td class="small text-secondary">{{ h.created_at|date:"d M Y H:i" }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="8" class="text-center text-muted py-5">
-                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-                            {% if product_id or movement_type or date_from or date_to %}
-                                No stock movements matched the filter criteria.
-                            {% else %}
-                                No stock movements recorded yet. Movements are generated automatically from Purchases, Sales, or Manual Adjustments.
-                            {% endif %}
+                        <td colspan="9" class="py-4">
+                            <div class="empty-state py-3">
+                                <div class="empty-state-icon">
+                                    <i class="bi bi-clock-history"></i>
+                                </div>
+                                <div class="empty-state-title">No Movement History</div>
+                                <p class="empty-state-description">
+                                    {% if product_id or movement_type or date_from or date_to %}
+                                        No stock movements match the specified filtering criteria.
+                                    {% else %}
+                                        No stock movements have been recorded in the system yet.
+                                    {% endif %}
+                                </p>
+                                {% if product_id or movement_type or date_from or date_to %}
+                                    <a href="{% url 'stock_history' %}" class="btn btn-sm btn-outline-secondary">Reset Filters</a>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -147,11 +160,9 @@
             </table>
         </div>
     </div>
-
-    <!-- Pagination -->
     {% if page_obj.paginator.num_pages > 1 %}
-    <div class="card-footer bg-white border-top d-flex align-items-center justify-content-between py-2 px-3 flex-wrap gap-2">
-        <small class="text-muted">
+    <div class="card-footer d-flex align-items-center justify-content-between flex-wrap gap-2 py-3 px-3">
+        <small class="text-secondary">
             Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} movements
         </small>
         <nav aria-label="Stock history pagination">

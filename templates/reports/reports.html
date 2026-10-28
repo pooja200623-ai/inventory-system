@@ -2,32 +2,36 @@
 
 {% block title %}Reports & Analytics{% endblock %}
 
+{% block breadcrumbs %}
+<li class="breadcrumb-item active" aria-current="page">Reports &amp; Analytics</li>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
     <div>
         <h4 class="mb-0 fw-bold"><i class="bi bi-graph-up-arrow me-2 text-primary"></i>Reports &amp; Analytics</h4>
-        <small class="text-muted">Comprehensive breakdown of sales, purchases, stock valuation, and estimated profitability</small>
+        <small class="text-secondary">Comprehensive breakdown of sales, purchases, stock valuation, and estimated profitability</small>
     </div>
 </div>
 
 <!-- Date Filter Form -->
-<div class="card shadow-sm border-0 mb-4">
+<div class="card mb-4">
     <div class="card-body py-3 px-3">
         <form method="get" class="row g-2 align-items-end" id="reportFilterForm">
             <!-- Hidden active tab to keep tab state on filter -->
             <input type="hidden" name="tab" id="activeTabInput" value="{{ active_tab }}">
 
-            <div class="col-md-3 col-sm-6">
-                <label class="form-label small text-muted mb-1">From Date</label>
+            <div class="col-12 col-sm-6 col-md-3">
+                <label class="form-label small text-secondary mb-1">From Date</label>
                 <input type="date" name="date_from" value="{{ date_from }}" class="form-control form-control-sm">
             </div>
 
-            <div class="col-md-3 col-sm-6">
-                <label class="form-label small text-muted mb-1">To Date</label>
+            <div class="col-12 col-sm-6 col-md-3">
+                <label class="form-label small text-secondary mb-1">To Date</label>
                 <input type="date" name="date_to" value="{{ date_to }}" class="form-control form-control-sm">
             </div>
 
-            <div class="col-md-3 col-sm-12 d-flex gap-2">
+            <div class="col-12 col-md-4 d-flex gap-2">
                 <button type="submit" class="btn btn-sm btn-primary">
                     <i class="bi bi-funnel me-1"></i> Apply Filter
                 </button>
@@ -38,30 +42,30 @@
 </div>
 
 <!-- Tabs Navigation -->
-<ul class="nav nav-tabs nav-fill mb-3" id="reportsTab" role="tablist">
+<ul class="nav nav-pills mb-3 flex-wrap gap-1" id="reportsTab" role="tablist">
     <li class="nav-item" role="presentation">
-        <button class="nav-link {% if active_tab == 'daily_sales' %}active fw-semibold{% endif %}" id="daily-tab" data-bs-toggle="tab" data-bs-target="#daily" type="button" role="tab" onclick="setTab('daily_sales')">
-            <i class="bi bi-calendar-day me-1"></i> 1. Daily Sales
+        <button class="nav-link {% if active_tab == 'daily_sales' %}active{% endif %}" id="daily-tab" data-bs-toggle="tab" data-bs-target="#daily" type="button" role="tab" onclick="setTab('daily_sales')">
+            <i class="bi bi-calendar-day me-1"></i> Daily Sales
         </button>
     </li>
     <li class="nav-item" role="presentation">
-        <button class="nav-link {% if active_tab == 'monthly_sales' %}active fw-semibold{% endif %}" id="monthly-tab" data-bs-toggle="tab" data-bs-target="#monthly" type="button" role="tab" onclick="setTab('monthly_sales')">
-            <i class="bi bi-calendar-month me-1"></i> 2. Monthly Sales
+        <button class="nav-link {% if active_tab == 'monthly_sales' %}active{% endif %}" id="monthly-tab" data-bs-toggle="tab" data-bs-target="#monthly" type="button" role="tab" onclick="setTab('monthly_sales')">
+            <i class="bi bi-calendar-month me-1"></i> Monthly Sales
         </button>
     </li>
     <li class="nav-item" role="presentation">
-        <button class="nav-link {% if active_tab == 'purchases' %}active fw-semibold{% endif %}" id="purchases-tab" data-bs-toggle="tab" data-bs-target="#purchases" type="button" role="tab" onclick="setTab('purchases')">
-            <i class="bi bi-truck me-1"></i> 3. Purchase Summary
+        <button class="nav-link {% if active_tab == 'purchases' %}active{% endif %}" id="purchases-tab" data-bs-toggle="tab" data-bs-target="#purchases" type="button" role="tab" onclick="setTab('purchases')">
+            <i class="bi bi-truck me-1"></i> Purchase Summary
         </button>
     </li>
     <li class="nav-item" role="presentation">
-        <button class="nav-link {% if active_tab == 'current_stock' %}active fw-semibold{% endif %}" id="stock-tab" data-bs-toggle="tab" data-bs-target="#stock" type="button" role="tab" onclick="setTab('current_stock')">
-            <i class="bi bi-boxes me-1"></i> 4. Current Stock Value
+        <button class="nav-link {% if active_tab == 'current_stock' %}active{% endif %}" id="stock-tab" data-bs-toggle="tab" data-bs-target="#stock" type="button" role="tab" onclick="setTab('current_stock')">
+            <i class="bi bi-boxes me-1"></i> Stock Valuation
         </button>
     </li>
     <li class="nav-item" role="presentation">
-        <button class="nav-link {% if active_tab == 'profit' %}active fw-semibold{% endif %}" id="profit-tab" data-bs-toggle="tab" data-bs-target="#profit" type="button" role="tab" onclick="setTab('profit')">
-            <i class="bi bi-cash-stack me-1"></i> 5. Estimated Profit
+        <button class="nav-link {% if active_tab == 'profit' %}active{% endif %}" id="profit-tab" data-bs-toggle="tab" data-bs-target="#profit" type="button" role="tab" onclick="setTab('profit')">
+            <i class="bi bi-cash-stack me-1"></i> Estimated Profit
         </button>
     </li>
 </ul>
@@ -71,11 +75,11 @@
 
     <!-- TAB 1: DAILY SALES -->
     <div class="tab-pane fade {% if active_tab == 'daily_sales' %}show active{% endif %}" id="daily" role="tabpanel">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
-                    <h5 class="card-title mb-0 fw-semibold">Daily Sales Breakdown</h5>
-                    <small class="text-muted">Filtered: {{ date_from }} to {{ date_to }}</small>
+                    <h6 class="card-title mb-0 fw-semibold">Daily Sales Breakdown</h6>
+                    <small class="text-secondary">Filtered: {{ date_from }} to {{ date_to }}</small>
                 </div>
                 <a href="{% url 'export_csv' %}?type=daily_sales&date_from={{ date_from }}&date_to={{ date_to }}" class="btn btn-sm btn-outline-success">
                     <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
@@ -84,37 +88,38 @@
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
+                        <thead>
                             <tr>
-                                <th>#</th>
                                 <th>Date</th>
-                                <th class="text-center">Orders Count</th>
-                                <th class="text-end">Total Sales</th>
+                                <th class="text-center">Total Invoices</th>
+                                <th class="text-end">Daily Revenue</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for row in daily_sales %}
                             <tr>
-                                <td class="text-muted small">{{ forloop.counter }}</td>
-                                <td class="fw-semibold"><i class="bi bi-calendar3 me-1 text-muted"></i>{{ row.day|date:"d M Y" }}</td>
-                                <td class="text-center"><span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3">{{ row.orders_count }}</span></td>
-                                <td class="text-end fw-bold text-success">${{ row.total_amount|floatformat:2 }}</td>
+                                <td class="fw-semibold">{{ row.day|date:"d M Y (D)" }}</td>
+                                <td class="text-center"><span class="badge badge-subtle-primary">{{ row.order_count }}</span></td>
+                                <td class="text-end fw-bold text-success">${{ row.daily_total|floatformat:2 }}</td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="4" class="text-center text-muted py-5">
-                                    <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-                                    No sales found in this date range.
+                                <td colspan="3" class="py-4">
+                                    <div class="empty-state py-2">
+                                        <div class="empty-state-icon"><i class="bi bi-calendar-x"></i></div>
+                                        <div class="empty-state-title">No Sales in Selected Period</div>
+                                        <p class="empty-state-description">Try adjusting your date range filter above.</p>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
                         </tbody>
                         {% if daily_sales %}
-                        <tfoot class="table-light fw-bold">
-                            <tr>
-                                <td colspan="2" class="text-end">Summary Total:</td>
-                                <td class="text-center">{{ daily_totals.total_orders }} orders</td>
-                                <td class="text-end text-success fs-6">${{ daily_totals.total_sales|floatformat:2 }}</td>
+                        <tfoot>
+                            <tr class="fw-bold">
+                                <td>Grand Total:</td>
+                                <td class="text-center">{{ total_daily_orders }}</td>
+                                <td class="text-end text-success">${{ total_daily_revenue|floatformat:2 }}</td>
                             </tr>
                         </tfoot>
                         {% endif %}
@@ -126,11 +131,11 @@
 
     <!-- TAB 2: MONTHLY SALES -->
     <div class="tab-pane fade {% if active_tab == 'monthly_sales' %}show active{% endif %}" id="monthly" role="tabpanel">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
-                    <h5 class="card-title mb-0 fw-semibold">Monthly Sales Breakdown</h5>
-                    <small class="text-muted">Aggregated by calendar month</small>
+                    <h6 class="card-title mb-0 fw-semibold">Monthly Sales Trend</h6>
+                    <small class="text-secondary">Filtered: {{ date_from }} to {{ date_to }}</small>
                 </div>
                 <a href="{% url 'export_csv' %}?type=monthly_sales&date_from={{ date_from }}&date_to={{ date_to }}" class="btn btn-sm btn-outline-success">
                     <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
@@ -139,37 +144,38 @@
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
+                        <thead>
                             <tr>
-                                <th>#</th>
                                 <th>Month</th>
-                                <th class="text-center">Orders Count</th>
-                                <th class="text-end">Total Sales</th>
+                                <th class="text-center">Total Invoices</th>
+                                <th class="text-end">Monthly Revenue</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for row in monthly_sales %}
                             <tr>
-                                <td class="text-muted small">{{ forloop.counter }}</td>
-                                <td class="fw-semibold"><i class="bi bi-calendar-event me-1 text-muted"></i>{{ row.month|date:"F Y" }}</td>
-                                <td class="text-center"><span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3">{{ row.orders_count }}</span></td>
-                                <td class="text-end fw-bold text-success">${{ row.total_amount|floatformat:2 }}</td>
+                                <td class="fw-semibold">{{ row.month|date:"F Y" }}</td>
+                                <td class="text-center"><span class="badge badge-subtle-primary">{{ row.order_count }}</span></td>
+                                <td class="text-end fw-bold text-success">${{ row.monthly_total|floatformat:2 }}</td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="4" class="text-center text-muted py-5">
-                                    <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-                                    No sales found in this date range.
+                                <td colspan="3" class="py-4">
+                                    <div class="empty-state py-2">
+                                        <div class="empty-state-icon"><i class="bi bi-calendar-x"></i></div>
+                                        <div class="empty-state-title">No Monthly Sales Data</div>
+                                        <p class="empty-state-description">No monthly orders found for this time span.</p>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
                         </tbody>
                         {% if monthly_sales %}
-                        <tfoot class="table-light fw-bold">
-                            <tr>
-                                <td colspan="2" class="text-end">Summary Total:</td>
-                                <td class="text-center">{{ monthly_totals.total_orders }} orders</td>
-                                <td class="text-end text-success fs-6">${{ monthly_totals.total_sales|floatformat:2 }}</td>
+                        <tfoot>
+                            <tr class="fw-bold">
+                                <td>Grand Total:</td>
+                                <td class="text-center">{{ total_monthly_orders }}</td>
+                                <td class="text-end text-success">${{ total_monthly_revenue|floatformat:2 }}</td>
                             </tr>
                         </tfoot>
                         {% endif %}
@@ -181,104 +187,67 @@
 
     <!-- TAB 3: PURCHASE SUMMARY -->
     <div class="tab-pane fade {% if active_tab == 'purchases' %}show active{% endif %}" id="purchases" role="tabpanel">
-        <div class="row g-4">
-            <!-- By Supplier -->
-            <div class="col-lg-6">
-                <div class="card shadow-sm border-0 h-100">
-                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <h6 class="card-title mb-0 fw-semibold">Purchases by Supplier</h6>
-                        <a href="{% url 'export_csv' %}?type=purchases_supplier&date_from={{ date_from }}&date_to={{ date_to }}" class="btn btn-sm btn-outline-success">
-                            <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
-                        </a>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Supplier</th>
-                                        <th class="text-center">Orders</th>
-                                        <th class="text-end">Purchased ($)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for row in supplier_summary %}
-                                    <tr>
-                                        <td>
-                                            <span class="fw-semibold">{{ row.supplier__name }}</span>
-                                            <div class="small text-muted">{{ row.supplier__phone|default:row.supplier__email }}</div>
-                                        </td>
-                                        <td class="text-center"><span class="badge bg-light text-dark border">{{ row.orders_count }}</span></td>
-                                        <td class="text-end fw-semibold text-primary">${{ row.total_amount|floatformat:2 }}</td>
-                                    </tr>
-                                    {% empty %}
-                                    <tr>
-                                        <td colspan="3" class="text-center text-muted py-4">No purchases for this period.</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h6 class="card-title mb-0 fw-semibold">Procurement Spend by Supplier</h6>
+                    <small class="text-secondary">Filtered: {{ date_from }} to {{ date_to }}</small>
                 </div>
+                <a href="{% url 'export_csv' %}?type=purchases&date_from={{ date_from }}&date_to={{ date_to }}" class="btn btn-sm btn-outline-success">
+                    <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
+                </a>
             </div>
-
-            <!-- By Date -->
-            <div class="col-lg-6">
-                <div class="card shadow-sm border-0 h-100">
-                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <h6 class="card-title mb-0 fw-semibold">Purchases by Date</h6>
-                        <a href="{% url 'export_csv' %}?type=purchases_date&date_from={{ date_from }}&date_to={{ date_to }}" class="btn btn-sm btn-outline-success">
-                            <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
-                        </a>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Date</th>
-                                        <th class="text-center">Orders</th>
-                                        <th class="text-end">Purchased ($)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for row in purchase_by_date %}
-                                    <tr>
-                                        <td class="fw-semibold"><i class="bi bi-calendar3 me-1 text-muted"></i>{{ row.day|date:"d M Y" }}</td>
-                                        <td class="text-center"><span class="badge bg-light text-dark border">{{ row.orders_count }}</span></td>
-                                        <td class="text-end fw-semibold text-primary">${{ row.total_amount|floatformat:2 }}</td>
-                                    </tr>
-                                    {% empty %}
-                                    <tr>
-                                        <td colspan="3" class="text-center text-muted py-4">No purchases for this period.</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                                {% if purchase_by_date %}
-                                <tfoot class="table-light fw-bold">
-                                    <tr>
-                                        <td>Total:</td>
-                                        <td class="text-center">{{ purchase_totals.total_orders }} orders</td>
-                                        <td class="text-end text-primary">${{ purchase_totals.total_amount|floatformat:2 }}</td>
-                                    </tr>
-                                </tfoot>
-                                {% endif %}
-                            </table>
-                        </div>
-                    </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Supplier Name</th>
+                                <th class="text-center">Purchase Orders</th>
+                                <th class="text-end">Total Spend</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in supplier_purchases %}
+                            <tr>
+                                <td class="fw-semibold">{{ row.supplier__name }}</td>
+                                <td class="text-center"><span class="badge badge-subtle-secondary">{{ row.order_count }}</span></td>
+                                <td class="text-end fw-bold text-primary">${{ row.supplier_total|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="py-4">
+                                    <div class="empty-state py-2">
+                                        <div class="empty-state-icon"><i class="bi bi-truck"></i></div>
+                                        <div class="empty-state-title">No Purchases in Period</div>
+                                        <p class="empty-state-description">No purchase orders recorded for the selected dates.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        {% if supplier_purchases %}
+                        <tfoot>
+                            <tr class="fw-bold">
+                                <td>Grand Total Procurement:</td>
+                                <td class="text-center">{{ total_supplier_orders }}</td>
+                                <td class="text-end text-primary">${{ total_supplier_spend|floatformat:2 }}</td>
+                            </tr>
+                        </tfoot>
+                        {% endif %}
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- TAB 4: CURRENT STOCK VALUE -->
+    <!-- TAB 4: CURRENT STOCK VALUATION -->
     <div class="tab-pane fade {% if active_tab == 'current_stock' %}show active{% endif %}" id="stock" role="tabpanel">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
-                    <h5 class="card-title mb-0 fw-semibold">Current Inventory Stock &amp; Valuation</h5>
-                    <small class="text-muted">Calculated as: <code>quantity &times; purchase_price</code></small>
+                    <h6 class="card-title mb-0 fw-semibold">Current Stock Valuation Report</h6>
+                    <small class="text-secondary">Real-time asset valuation at cost vs retail potential</small>
                 </div>
                 <a href="{% url 'export_csv' %}?type=current_stock" class="btn btn-sm btn-outline-success">
                     <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
@@ -287,53 +256,51 @@
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
+                        <thead>
                             <tr>
-                                <th>#</th>
                                 <th>Product</th>
                                 <th>Category</th>
                                 <th class="text-center">Stock Qty</th>
-                                <th class="text-end">Unit Cost</th>
+                                <th class="text-end">Cost Price</th>
                                 <th class="text-end">Selling Price</th>
-                                <th class="text-end">Total Stock Value</th>
-                                <th class="text-center">Status</th>
+                                <th class="text-end">Asset Value (Cost)</th>
+                                <th class="text-end">Retail Value</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for p in stock_items %}
+                            {% for p in stock_valuation %}
                             <tr>
-                                <td class="text-muted small">{{ forloop.counter }}</td>
-                                <td>
-                                    <span class="fw-semibold">{{ p.name }}</span>
-                                    <div><code class="small text-muted">{{ p.product_code }}</code></div>
+                                <td class="fw-semibold">
+                                    {{ p.name }}
+                                    <div class="small text-secondary"><code>{{ p.product_code }}</code></div>
                                 </td>
-                                <td><span class="badge bg-light text-dark border">{{ p.category.name }}</span></td>
-                                <td class="text-center fw-semibold">{{ p.quantity }}</td>
-                                <td class="text-end small">${{ p.purchase_price|floatformat:2 }}</td>
-                                <td class="text-end small">${{ p.selling_price|floatformat:2 }}</td>
-                                <td class="text-end fw-bold text-dark">${{ p.stock_value|floatformat:2 }}</td>
-                                <td class="text-center">
-                                    {% if p.is_low_stock %}
-                                        <span class="badge bg-danger">Low Stock</span>
-                                    {% else %}
-                                        <span class="badge bg-success">OK</span>
-                                    {% endif %}
-                                </td>
+                                <td><span class="badge badge-subtle-secondary">{{ p.category.name }}</span></td>
+                                <td class="text-center fw-bold">{{ p.quantity }}</td>
+                                <td class="text-end small">${{ p.purchase_price }}</td>
+                                <td class="text-end small">${{ p.selling_price }}</td>
+                                <td class="text-end fw-semibold text-primary">${{ p.total_cost_val|floatformat:2 }}</td>
+                                <td class="text-end fw-semibold text-success">${{ p.total_sell_val|floatformat:2 }}</td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="8" class="text-center text-muted py-5">No products registered yet.</td>
+                                <td colspan="7" class="py-4">
+                                    <div class="empty-state py-2">
+                                        <div class="empty-state-icon"><i class="bi bi-boxes"></i></div>
+                                        <div class="empty-state-title">No Inventory Items</div>
+                                        <p class="empty-state-description">Add products to see inventory valuation.</p>
+                                    </div>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
-                        {% if stock_items %}
-                        <tfoot class="table-light fw-bold">
-                            <tr>
-                                <td colspan="3" class="text-end">Inventory Totals:</td>
-                                <td class="text-center">{{ stock_totals.total_quantity }} units</td>
+                        {% if stock_valuation %}
+                        <tfoot>
+                            <tr class="fw-bold">
+                                <td colspan="2">Total Inventory Valuation:</td>
+                                <td class="text-center">{{ total_stock_items }}</td>
                                 <td colspan="2"></td>
-                                <td class="text-end text-success fs-6">${{ stock_totals.total_value|floatformat:2 }}</td>
-                                <td></td>
+                                <td class="text-end text-primary">${{ total_asset_cost|floatformat:2 }}</td>
+                                <td class="text-end text-success">${{ total_asset_retail|floatformat:2 }}</td>
                             </tr>
                         </tfoot>
                         {% endif %}
@@ -345,96 +312,68 @@
 
     <!-- TAB 5: ESTIMATED PROFIT -->
     <div class="tab-pane fade {% if active_tab == 'profit' %}show active{% endif %}" id="profit" role="tabpanel">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
-                    <h5 class="card-title mb-0 fw-semibold">Estimated Gross Profit from Sales</h5>
-                    <small class="text-muted">Formula: <code>(Selling Unit Price &minus; Product Purchase Cost) &times; Quantity</code></small>
+                    <h6 class="card-title mb-0 fw-semibold">Estimated Gross Profit Analysis</h6>
+                    <small class="text-secondary">Filtered: {{ date_from }} to {{ date_to }}</small>
                 </div>
                 <a href="{% url 'export_csv' %}?type=profit&date_from={{ date_from }}&date_to={{ date_to }}" class="btn btn-sm btn-outline-success">
                     <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
                 </a>
             </div>
-
-            <!-- Profit Summary Bar -->
-            <div class="card-body bg-light border-bottom py-3">
-                <div class="row text-center g-3">
-                    <div class="col-sm-3 col-6">
-                        <span class="text-muted small">Units Sold</span>
-                        <h4 class="fw-bold mb-0">{{ profit_totals.total_qty }}</h4>
-                    </div>
-                    <div class="col-sm-3 col-6">
-                        <span class="text-muted small">Total Sales Revenue</span>
-                        <h4 class="fw-bold text-success mb-0">${{ profit_totals.total_revenue|floatformat:2 }}</h4>
-                    </div>
-                    <div class="col-sm-3 col-6">
-                        <span class="text-muted small">Total Product Cost</span>
-                        <h4 class="fw-bold text-danger mb-0">${{ profit_totals.total_cost|floatformat:2 }}</h4>
-                    </div>
-                    <div class="col-sm-3 col-6">
-                        <span class="text-muted small">Estimated Gross Profit</span>
-                        <h4 class="fw-bold {% if profit_totals.total_profit >= 0 %}text-primary{% else %}text-danger{% endif %} mb-0">
-                            ${{ profit_totals.total_profit|floatformat:2 }}
-                        </h4>
-                    </div>
-                </div>
-            </div>
-
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
+                        <thead>
                             <tr>
-                                <th>#</th>
-                                <th>Date &amp; Invoice</th>
-                                <th>Product</th>
-                                <th class="text-center">Qty</th>
-                                <th class="text-end">Cost Price</th>
-                                <th class="text-end">Sold Price</th>
-                                <th class="text-end">Total Cost</th>
-                                <th class="text-end">Total Revenue</th>
+                                <th>Product Name</th>
+                                <th class="text-center">Units Sold</th>
+                                <th class="text-end">Revenue</th>
+                                <th class="text-end">Est. Cost</th>
                                 <th class="text-end">Gross Profit</th>
+                                <th class="text-center">Margin %</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for item in sold_items %}
+                            {% for item in profit_data %}
                             <tr>
-                                <td class="text-muted small">{{ forloop.counter }}</td>
-                                <td>
-                                    <span class="fw-semibold">{{ item.sale.invoice_number }}</span>
-                                    <div class="small text-muted">{{ item.sale.sale_date|date:"d M Y" }}</div>
-                                </td>
-                                <td>
-                                    <span class="fw-semibold">{{ item.product.name }}</span>
-                                    <div><code class="small text-muted">{{ item.product.product_code }}</code></div>
-                                </td>
-                                <td class="text-center">{{ item.quantity }}</td>
-                                <td class="text-end small">${{ item.product.purchase_price|floatformat:2 }}</td>
-                                <td class="text-end small">${{ item.unit_price|floatformat:2 }}</td>
-                                <td class="text-end text-danger small">${{ item.cost_total|floatformat:2 }}</td>
-                                <td class="text-end text-success small">${{ item.selling_total|floatformat:2 }}</td>
+                                <td class="fw-semibold">{{ item.product_name }}</td>
+                                <td class="text-center">{{ item.units_sold }}</td>
+                                <td class="text-end small">${{ item.revenue|floatformat:2 }}</td>
+                                <td class="text-end small text-secondary">${{ item.cost|floatformat:2 }}</td>
                                 <td class="text-end fw-bold {% if item.profit >= 0 %}text-success{% else %}text-danger{% endif %}">
                                     ${{ item.profit|floatformat:2 }}
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge {% if item.margin >= 20 %}badge-subtle-success{% elif item.margin >= 0 %}badge-subtle-warning{% else %}badge-subtle-danger{% endif %}">
+                                        {{ item.margin|floatformat:1 }}%
+                                    </span>
                                 </td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="9" class="text-center text-muted py-5">
-                                    <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-                                    No sales transactions recorded in this date range.
+                                <td colspan="6" class="py-4">
+                                    <div class="empty-state py-2">
+                                        <div class="empty-state-icon"><i class="bi bi-cash-stack"></i></div>
+                                        <div class="empty-state-title">No Profit Data for Period</div>
+                                        <p class="empty-state-description">No completed sales exist within the chosen dates.</p>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
                         </tbody>
-                        {% if sold_items %}
-                        <tfoot class="table-light fw-bold">
-                            <tr>
-                                <td colspan="3" class="text-end">Totals:</td>
-                                <td class="text-center">{{ profit_totals.total_qty }}</td>
-                                <td colspan="2"></td>
-                                <td class="text-end text-danger">${{ profit_totals.total_cost|floatformat:2 }}</td>
-                                <td class="text-end text-success">${{ profit_totals.total_revenue|floatformat:2 }}</td>
-                                <td class="text-end text-primary fs-6">${{ profit_totals.total_profit|floatformat:2 }}</td>
+                        {% if profit_data %}
+                        <tfoot>
+                            <tr class="fw-bold">
+                                <td>Overall Totals:</td>
+                                <td class="text-center">{{ total_units_sold }}</td>
+                                <td class="text-end text-success">${{ overall_revenue|floatformat:2 }}</td>
+                                <td class="text-end text-secondary">${{ overall_cost|floatformat:2 }}</td>
+                                <td class="text-end text-success">${{ overall_profit|floatformat:2 }}</td>
+                                <td class="text-center">
+                                    <span class="badge badge-subtle-success">{{ overall_margin|floatformat:1 }}%</span>
+                                </td>
                             </tr>
                         </tfoot>
                         {% endif %}
@@ -443,16 +382,15 @@
             </div>
         </div>
     </div>
-
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 function setTab(tabName) {
-    const input = document.getElementById('activeTabInput');
-    if (input) {
-        input.value = tabName;
+    const tabInput = document.getElementById('activeTabInput');
+    if (tabInput) {
+        tabInput.value = tabName;
     }
 }
 </script>

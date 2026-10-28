@@ -2,15 +2,20 @@
 
 {% block title %}Invoice {{ sale.invoice_number }}{% endblock %}
 
+{% block breadcrumbs %}
+<li class="breadcrumb-item"><a href="{% url 'sale_list' %}">Sales</a></li>
+<li class="breadcrumb-item active" aria-current="page">Invoice {{ sale.invoice_number }}</li>
+{% endblock %}
+
 {% block extra_css %}
 <style>
 @media print {
-    /* Hide navigation, sidebar, footer, buttons, and alert messages on print */
     #sidebar,
-    .navbar,
+    .top-navbar,
     .footer,
     .no-print,
-    .alert {
+    .alert,
+    .sidebar-backdrop {
         display: none !important;
     }
     
@@ -43,9 +48,9 @@
 {% endblock %}
 
 {% block content %}
-<div class="mb-4 d-flex align-items-center justify-content-between no-print">
+<div class="mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2 no-print">
     <div>
-        <a href="{% url 'sale_list' %}" class="text-decoration-none text-muted small">
+        <a href="{% url 'sale_list' %}" class="text-decoration-none text-secondary small">
             <i class="bi bi-arrow-left me-1"></i> Back to Sales
         </a>
         <h4 class="mt-1 fw-bold"><i class="bi bi-receipt me-2 text-primary"></i>Invoice {{ sale.invoice_number }}</h4>
@@ -60,81 +65,94 @@
     </div>
 </div>
 
-<div class="card shadow-sm border-0 invoice-card">
+<div class="card invoice-card">
     <div class="card-body p-4 p-md-5">
         <!-- Shop / Header -->
         <div class="row align-items-center border-bottom pb-4 mb-4">
-            <div class="col-sm-6">
+            <div class="col-12 col-sm-6">
                 <div class="d-flex align-items-center mb-2">
-                    <i class="bi bi-boxes fs-2 text-primary me-2"></i>
+                    <span class="sidebar-brand-badge me-2" style="width: 42px; height: 42px;">
+                        <i class="bi bi-boxes fs-4 text-white"></i>
+                    </span>
                     <h3 class="fw-bold tracking-tight mb-0">StockPulse IMS</h3>
                 </div>
-                <p class="text-muted small mb-0">Inventory Management &amp; Retail Solutions</p>
-                <p class="text-muted small mb-0">Email: support@stockpulse.local | Phone: +1 (555) 019-2834</p>
+                <p class="text-secondary small mb-0">Inventory Management &amp; Retail Solutions</p>
+                <p class="text-secondary small mb-0">Email: support@stockpulse.local | Phone: +1 (555) 019-2834</p>
             </div>
-            <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
-                <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-6 px-3 py-2 mb-2">TAX INVOICE</span>
-                <h4 class="fw-bold text-dark mb-1">{{ sale.invoice_number }}</h4>
-                <div class="text-muted small">Date: <span class="fw-semibold text-dark">{{ sale.sale_date|date:"F d, Y" }}</span></div>
+            <div class="col-12 col-sm-6 text-sm-end mt-3 mt-sm-0">
+                <span class="badge badge-subtle-primary fs-6 px-3 py-2 mb-2">TAX INVOICE</span>
+                <h4 class="fw-bold mb-1">{{ sale.invoice_number }}</h4>
+                <div class="text-secondary small">Date: <span class="fw-semibold text-body">{{ sale.sale_date|date:"F d, Y" }}</span></div>
             </div>
         </div>
 
-        <!-- Bill To & Order Info -->
+        <!-- Bill To & Metadata -->
         <div class="row mb-4">
-            <div class="col-sm-6">
-                <h6 class="text-uppercase text-secondary fw-semibold small mb-2">Billed To:</h6>
-                <h5 class="fw-bold text-dark mb-1">{{ sale.customer_name }}</h5>
-                <p class="text-muted small mb-0">Customer Walk-in / Direct Order</p>
+            <div class="col-12 col-sm-6 mb-3 mb-sm-0">
+                <span class="text-secondary small text-uppercase fw-semibold d-block mb-1">Billed To</span>
+                <h5 class="fw-bold mb-1">{{ sale.customer_name }}</h5>
+                <p class="text-secondary small mb-0">Cash / Retail Customer</p>
             </div>
-            <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
-                <h6 class="text-uppercase text-secondary fw-semibold small mb-2">Invoice Details:</h6>
-                <p class="text-muted small mb-0">Billed by: <strong class="text-dark">{{ sale.created_by.get_full_name|default:sale.created_by.username }}</strong></p>
-                <p class="text-muted small mb-0">Generated: {{ sale.created_at|date:"d M Y, H:i" }}</p>
+            <div class="col-12 col-sm-6 text-sm-end">
+                <span class="text-secondary small text-uppercase fw-semibold d-block mb-1">Order Details</span>
+                <p class="small mb-1"><span class="text-secondary">Cashier:</span> <span class="fw-semibold">{{ sale.created_by.username }}</span></p>
+                <p class="small mb-1"><span class="text-secondary">Recorded At:</span> {{ sale.created_at|date:"h:i A, M d, Y" }}</p>
+                <p class="small mb-0"><span class="text-secondary">Status:</span> <span class="badge badge-subtle-success">Paid</span></p>
             </div>
         </div>
 
         <!-- Items Table -->
         <div class="table-responsive mb-4">
-            <table class="table table-bordered align-middle">
-                <thead class="table-light">
+            <table class="table align-middle">
+                <thead>
                     <tr>
-                        <th style="width: 5%;" class="text-center">#</th>
+                        <th style="width:50px;">#</th>
                         <th>Item Description</th>
-                        <th style="width: 15%;" class="text-center">Item Code</th>
-                        <th style="width: 12%;" class="text-center">Quantity</th>
-                        <th style="width: 15%;" class="text-end">Unit Price</th>
-                        <th style="width: 18%;" class="text-end">Total Amount</th>
+                        <th>Product SKU</th>
+                        <th class="text-center">Qty</th>
+                        <th class="text-end">Unit Price</th>
+                        <th class="text-end">Total</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in sale.items.all %}
                     <tr>
-                        <td class="text-center text-muted small">{{ forloop.counter }}</td>
-                        <td>
-                            <span class="fw-semibold">{{ item.product.name }}</span>
-                            <div class="small text-muted">{{ item.product.category.name }}</div>
-                        </td>
-                        <td class="text-center"><code class="small">{{ item.product.product_code }}</code></td>
-                        <td class="text-center fw-semibold">{{ item.quantity }}</td>
+                        <td class="text-secondary small">{{ forloop.counter }}</td>
+                        <td class="fw-semibold">{{ item.product.name }}</td>
+                        <td><code>{{ item.product.product_code }}</code></td>
+                        <td class="text-center">{{ item.quantity }}</td>
                         <td class="text-end">${{ item.unit_price|floatformat:2 }}</td>
-                        <td class="text-end fw-bold">${{ item.line_total|floatformat:2 }}</td>
+                        <td class="text-end fw-semibold">${{ item.line_total|floatformat:2 }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="4" class="border-0"></td>
-                        <td class="text-end fw-bold bg-light">Grand Total:</td>
-                        <td class="text-end fw-bold fs-5 text-success bg-light">${{ sale.total_amount|floatformat:2 }}</td>
-                    </tr>
-                </tfoot>
             </table>
         </div>
 
-        <!-- Footer / Notes -->
-        <div class="border-top pt-4 mt-4 text-center text-muted small">
-            <p class="mb-1 fw-semibold">Thank you for your business!</p>
-            <p class="mb-0">This is a computer-generated invoice. If you have any inquiries, please contact our support team.</p>
+        <!-- Summary Totals -->
+        <div class="row justify-content-end mb-4">
+            <div class="col-12 col-sm-6 col-md-5">
+                <table class="table table-borderless">
+                    <tr>
+                        <td class="text-secondary">Subtotal:</td>
+                        <td class="text-end fw-semibold">${{ sale.total_amount|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-secondary">Tax (0%):</td>
+                        <td class="text-end fw-semibold">$0.00</td>
+                    </tr>
+                    <tr class="border-top">
+                        <td class="fw-bold fs-5">Grand Total:</td>
+                        <td class="text-end fw-bold fs-5 text-success">${{ sale.total_amount|floatformat:2 }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Footer / Terms -->
+        <div class="border-top pt-4 text-center text-secondary small">
+            <p class="mb-1">Thank you for your business! Please keep this invoice for warranty and returns.</p>
+            <p class="mb-0">Questions? Contact support@stockpulse.local or call our billing desk at +1 (555) 019-2834.</p>
         </div>
     </div>
 </div>
